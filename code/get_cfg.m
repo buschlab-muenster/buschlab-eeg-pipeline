@@ -118,7 +118,7 @@ cfg.rej.rej_jp_allchans = 5;
 %% ICA parameters
 % % ------------------------------------------
 cfg.ica.ica_chans = cfg.chans.EEGchans; % Typicaly, ICA is computed on all channels, unless one channel is not really EEG.
-cfg.ica.ica_ncomps = numel(cfg.chans.EEGchans)-1;% CFG.ica_ncomps = numel(CFG.data_chans) - 3; % if ica_ncomps==0, determine data rank from the ...
+cfg.ica.ica_ncomps = numel(cfg.chans.EEGchans)-2;% CFG.ica_ncomps = numel(CFG.data_chans) - 3; % if ica_ncomps==0, determine data rank from the ...
 % data (EEGLAB default). Otherwise, use a fixed number of components. Note:
 % subject-specific settings will override this parameter.
 
