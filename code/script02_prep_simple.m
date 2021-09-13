@@ -42,7 +42,7 @@ parfor(isub = 1:length(subjects), nthreads) % set nthreads to 0 for normal for l
     % Temporary average reference. Necessary because joint prob. cannot
     % handle empty reference channel.
     if ~strcmp(tmpeeg.ref, 'averef')
-        tmpeeg = pop_reref( tmpeeg, [], 'keepref','on','exclude',[cfg.VEOGchan, cfg.HEOGchan] );
+        tmpeeg = pop_reref( tmpeeg, [], 'keepref','on','exclude', [max(cfg.chans.EEGchans)+1:EEG.nbchan]);
     end
     
     tmpeeg = pop_jointprob(tmpeeg, 1, cfg.chans.EEGchans, ...
