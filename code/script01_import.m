@@ -37,8 +37,8 @@ parfor(isub = 1:length(subjects), nthreads) % set nthreads to 0 for normal for l
     % EEG and logfile do not match. To fix this, I append a little bit of
     % data at the beginning of each file.
     % !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    nsecs = 5;
-    EEG = func_import_patchdata(EEG, nsecs);
+    %     nsecs = 5;
+    %     EEG = func_import_patchdata(EEG, nsecs);
     
     % --------------------------------------------------------------
     % Select data channels.
@@ -46,20 +46,15 @@ parfor(isub = 1:length(subjects), nthreads) % set nthreads to 0 for normal for l
     EEG = func_import_selectchans(EEG, cfg.chans);
     
     % --------------------------------------------------------------
-    % Compute VEOG and HEOG.
-    % --------------------------------------------------------------
-    EEG = func_import_eyechans(EEG, cfg.chans);
-    
-    % --------------------------------------------------------------
-    % Downsample data if required.
-    % --------------------------------------------------------------
-    EEG = func_import_downsample(EEG, cfg.prep);
-    
-    % --------------------------------------------------------------
     % Biosemi is recorded reference-free. We apply rereferencing in
     % software.
     % --------------------------------------------------------------
     EEG = func_import_reref(EEG, cfg.prep);
+    
+    % --------------------------------------------------------------
+    % Compute VEOG and HEOG.
+    % --------------------------------------------------------------
+    EEG = func_import_eyechans(EEG, cfg.chans);
     
     % --------------------------------------------------------------
     % Filter the data.
@@ -80,14 +75,21 @@ parfor(isub = 1:length(subjects), nthreads) % set nthreads to 0 for normal for l
     % --------------------------------------------------------------
     % Import Eyetracking data.
     % --------------------------------------------------------------
-    EEG = func_import_importEye(EEG, subjects(isub).namestr, cfg.dir, cfg.eyetrack);
+    EEG = func_import_importEye(EEG, subjects(isub).namestr, cfg.dir, cfg.eyetrack);    
     
+    % --------------------------------------------------------------
+    % Downsample data if required. IMPORTANT: use resampling only after
+    % importing the eye tracking data, or else the ET data will not be in
+    % sync with EEG data.
+    % --------------------------------------------------------------
+    EEG = func_import_downsample(EEG, cfg.prep);
+               
     % -------------------------------------------------------------
     % Epoch data.
     % --------------------------------------------------------------
     EEG = func_import_epoch(EEG, cfg.epoch, cfg.eyetrack.coregister_Eyelink);
-    EEG = pop_rmbase(EEG, [], []);
-    
+    %     EEG = pop_rmbase(EEG, [], []);
+        
     % --------------------------------------------------------------
     % Import behavioral data.
     % --------------------------------------------------------------
