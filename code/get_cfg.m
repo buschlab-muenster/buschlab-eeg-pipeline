@@ -1,4 +1,4 @@
-function cfg = getcfg
+function cfg = get_cfg
 
 [~, computername] = system('hostname');
 
