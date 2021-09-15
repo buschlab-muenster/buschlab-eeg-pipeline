@@ -32,6 +32,10 @@ parfor(isub = 1:length(subjects), nthreads)
     % --------------------------------------------------------------
     EEG = pop_rmbase(EEG, [], []);
     EEG = eeg_detrend(EEG);   
+    
+    EEG = pop_reref(EEG, [], 'keepref','on', ...
+        'exclude',[max(cfg.chans.EEGchans)+1:EEG.nbchan] );
+        
     [EEG, i] = pop_eegthresh(EEG, 1, cfg.chans.EEGchans, ...
         -cfg.final.rejthresh_post_ica, cfg.final.rejthresh_post_ica, ...
         EEG.xmin, EEG.xmax, 1, 1);
