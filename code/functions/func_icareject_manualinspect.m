@@ -14,7 +14,10 @@ while true %
         end
     end
 end
-% EEG.reject.gcompreject = evalin('base', 'ALLEEG(end).reject.gcompreject');
+
+% This line is important for updating the list of rejected and re-accepted
+% ICs!
+EEG.reject.gcompreject = evalin('base', 'ALLEEG(end).reject.gcompreject');
 
 
 %% 09: reconstruct signal without ICs and store output

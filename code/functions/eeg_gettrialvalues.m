@@ -15,7 +15,9 @@ function trial_values = eeg_gettrialvalues(EEG)
 
 fields = fieldnames(EEG.epoch);
 
-timelock_events = ([EEG.epoch.eventlatency]) == 0;
+%timelock_events = ([EEG.epoch.eventlatency]) == 0;
+timelock_events = cell2mat([EEG.epoch.eventlatency]) == 0;
+
 
 for ifield = 2:length(fields) % Skip the boring "event" field
     thisfieldname = fields{ifield}(6:end); % remove the "event"-prefix
@@ -25,6 +27,7 @@ for ifield = 2:length(fields) % Skip the boring "event" field
     if ischar(fieldvalues(1))
         trial_values.(thisfieldname) = fieldvalues(timelock_events);
     else
-        trial_values.(thisfieldname) = (fieldvalues(timelock_events));
+        %trial_values.(thisfieldname) = (fieldvalues(timelock_events));
+        trial_values.(thisfieldname) = cell2mat(fieldvalues(timelock_events));
     end
 end
