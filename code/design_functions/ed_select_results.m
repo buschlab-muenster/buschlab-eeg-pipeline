@@ -29,6 +29,9 @@ function [erpall, erproi, topo, statdat] = ed_select_results(G, conditions, vara
 % times: 2-element vector of time window of interest in ms. Default: entire time range.
 % subjects: vector with indices of subjects to process. Default: all subjects.
 % frequencies: for FFT and time-frequency data, vector of frequencies in Hz. Default: all frequencies.
+% bsl_win: optional time window for baseline correction.
+% bsl_method: method for baseline correction; 'sub'= baseline subtraction,
+%   'div': baseline division; 'db': 10 * log10 of division.
 %
 % OUTPUTS:
 % All outputs are cell arrays of length n_conditions.
@@ -40,10 +43,13 @@ function [erpall, erproi, topo, statdat] = ed_select_results(G, conditions, vara
 % For FFT data, averaging is across frequencies, not time.
 % For time-frequency data, averaging is across both time and frequencies.
 
+% --- Required input arguments: ---
 args = inputParser;
 addRequired(args, 'G', @isstruct);
 addRequired(args, 'conditions');
 
+
+% --- Optional input arguments: ---
 % We assume that the channel dimension is always the first dimension.
 addParameter(args, 'channels', 1:size(G.data{1}, 1), @isnumeric)
 
@@ -61,9 +67,22 @@ switch G.data_type
         
 end
 
+% Optional baseline correction. Default: no baseline correction
+addParameter(args, 'bsl_win', [], @isnumeric)
+addParameter(args, 'bsl_method', 'sub', @isstr)
+
+
 parse(args, G, conditions, varargin{:})
 
 %%
+if isempty(conditions)
+    fulldesign = true;
+    conditions = fullfact(G.DINFO.nlevels+1);
+else
+    fulldesign = false;
+end
+
+
 for icond = 1:length(conditions)    
     
     if isnumeric(conditions)
@@ -82,6 +101,24 @@ for icond = 1:length(conditions)
    
     cond_idx = num2cell(cond_idx);
     alldata = G.data{cond_idx{:}};   
+    
+    % Baseline correction if desired.
+    if ~isempty(args.Results.bsl_win)
+        bsl_idx = dsearchn(G.times', args.Results.bsl_win');
+        bsl = mean(alldata(:, bsl_idx(1):bsl_idx(2), :), 2);
+        
+        switch args.Results.bsl_method
+            case 'sub'
+                alldata = bsxfun(@minus, alldata, bsl);
+            case 'div'
+                alldata = bsxfun(@rdivide, alldata, bsl);
+            case 'db'
+                alldata = bsxfun(@rdivide, alldata, bsl);
+                alldata = 10 .* log10(alldata);
+        end
+    else
+%         disp('No baseline correction')
+    end
         
     switch G.data_type
         case {'erp', 'filtbert'}
@@ -106,23 +143,24 @@ for icond = 1:length(conditions)
 end
 
 
-%% ------------------------------------------------------------------------
-% Decode which condition we are interested in.
-% ------------------------------------------------------------------------
-function cond_idx = get_condition_index(thecondition, G)
+																		   
+											  
+																		  
+														
 
-for ifactor = 1:size(thecondition, 1)
-    factor_idx   = find(strcmp(G.DINFO.factor_names, thecondition{ifactor, 1}));
+if fulldesign == true
+    erpall  = reshape(erpall, G.DINFO.nlevels+1);
+    erproi  = reshape(erproi, G.DINFO.nlevels+1);
+										  
+												
+		
+												 
+    topo    = reshape(topo, G.DINFO.nlevels+1);
+    statdat = reshape(statdat, G.DINFO.nlevels+1);
+		
+																														 
+	   
     
-    if isnumeric(thecondition{ifactor, 2})
-        factor_level = thecondition{ifactor, 2};
-        
-    elseif strcmp(thecondition{ifactor, 2},  '*')
-        factor_level = G.DINFO.nlevels(factor_idx)+1;
-        
-    else
-        factor_level = find(strcmp(G.DINFO.factor_values{factor_idx}, thecondition{ifactor, 2}));
-    end
-    
-    cond_idx(ifactor) = factor_level;
+									 
 end
+
