@@ -1,158 +1,170 @@
 %% Set preferences, configuration and load list of subjects.
-clear; clc; close all
+clear; clc; %close all
 
 restoredefaultpath
 prefs = get_prefs('eeglab_all', 0);
 cfg = get_cfg;
+addpath('./design_functions/')
 
 %%
 design_idx = 1;
+tic
+load(fullfile(cfg.dir.grand, ['grand_d' num2str(design_idx) '_' 'erp']))
+toc
 
-% load(fullfile(cfg.dir.grand, ['grand_d' num2str(design_idx) '_' 'erp']))
-% load(fullfile(cfg.dir.grand, ['grand_d' num2str(design_idx) '_' 'fft_1000_1998']))
-load(fullfile(cfg.dir.grand, ['grand_d' num2str(design_idx) '_' 'fft_3000_3998']))
-load(fullfile(cfg.dir.grand, ['grand_d' num2str(design_idx) '_' 'fft_-1000_-2']))
-% load(fullfile(cfg.dir.grand, ['grand_d' num2str(design_idx) '_' 'filtbert_8_12']))
+% for icond = 1:numel(G.data)
+% 
+%     ref = mean(G.data{icond}, 1);
+%     G.data{icond}(1:65,:,:) = bsxfun(@minus, G.data{icond}(1:65,:,:), ref);
+%     
+% end
 
 %%
 % figure; topoplot([],G.chanlocs,'style','blank','electrodes','numbers');
 % addpath('C:\Users\nbusch\OneDrive\Dokumente\Github\My-utilities\EEG_functions\')
-% cond = [3,2,3];
+
 
 conditions = {};
+% correctness = 1;
+correctness = '*';
+goodsubs = [1:18 20:27];
+goodsubs = [2 7 9 10 11 13 14 16 17 20 22 23 25 26]; % Simply the best.
 
-correctness = 1;
+ntrials_total = cell2mat(G.ntrials{4,3,3});
+goodsubs = find(ntrials_total > 100);
 
 conditions{1} = {
-    'target_cue_w', 'MemL';
-    'saccade_cue_w', 'SaccL';
-    'response_correct', correctness};
+    'target_cue_w', 'MemL'; 'saccade_cue_w', 'SaccL'; 'response_correct', correctness};
 
 conditions{2} = {
-    'target_cue_w', 'MemL';
-    'saccade_cue_w', 'SaccR';
-    'response_correct', correctness};
+    'target_cue_w', 'MemL'; 'saccade_cue_w', 'SaccR'; 'response_correct', correctness};
 
 conditions{3} = {
-    'target_cue_w', 'MemR';
-    'saccade_cue_w', 'SaccL';
-    'response_correct', correctness};
+    'target_cue_w', 'MemR'; 'saccade_cue_w', 'SaccL'; 'response_correct', correctness};
 
 conditions{4} = {
-    'target_cue_w', 'MemR';
-    'saccade_cue_w', 'SaccR';
-    'response_correct', correctness};
+    'target_cue_w', 'MemR'; 'saccade_cue_w', 'SaccR'; 'response_correct', correctness};
 
 conditions{5} = {
-    'target_cue_w', 'MemX';
-    'saccade_cue_w', 'SaccL';
-    'response_correct', correctness};
+    'target_cue_w', 'MemX'; 'saccade_cue_w', 'SaccL'; 'response_correct', correctness};
 
 conditions{6} = {
-    'target_cue_w', 'MemX';
-    'saccade_cue_w', 'SaccR';
-    'response_correct', correctness};
+    'target_cue_w', 'MemX'; 'saccade_cue_w', 'SaccR'; 'response_correct', correctness};
+
+conditions{7} = {
+    'target_cue_w', 'MemL'; 'saccade_cue_w', '*'; 'response_correct', correctness};
+
+conditions{8} = {
+    'target_cue_w', 'MemR'; 'saccade_cue_w', '*'; 'response_correct', correctness};
+
+conditions{9} = {
+    'target_cue_w', 'MemX'; 'saccade_cue_w', '*'; 'response_correct', correctness};
+
+conditions{10} = {
+    'target_cue_w', '*'; 'saccade_cue_w', 'SaccL'; 'response_correct', correctness};
+
+conditions{11} = {
+    'target_cue_w', '*'; 'saccade_cue_w', 'SaccR'; 'response_correct', correctness};
 
 
-chans_l = [57 26 61 60 58 59];
-chans_r = [19 21 17 18 22 23];
+chans_l = [57 61 58 ];
+chans_r = [19 18 22 ];
+% chans_r = [14:19];
+% chans_l = [57 60];
+% chans_r = [19 17];
 
-[erpall, erproi, topo, statdat] = ed_select_results(...
-    G, conditions, 'channels', [chans_r], 'times', [3000 4000]);
-
-%%
-conditions = {};
-
-correctness = 1;
-
-conditions{1} = {
-    'target_cue_w', 'MemL';
-    'saccade_cue_w', '*';
-    'response_correct', correctness};
-
-conditions{2} = {
-    'target_cue_w', 'MemR';
-    'saccade_cue_w', '*';
-    'response_correct', correctness};
-
-[erpall, erproi, topo, statdat] = ed_select_results(...
-    G, conditions, 'channels', [chans_r], 'times', [1000 2000]);
+timewin = [1000 2000];
+timewin = [3000 4000];
+bsl_win = [-500 0];
+% bsl_win = [2800 3000];
 
 
-topo_opts= {'conv', 'off', 'electrodes', 'on', ...
-    'numcontour', 3, ...
-    'maplimits', 'absmax', 'whitebk', 'on', ...
-    'emarker2', {[chans_l chans_r],'.','w',18,1}};
+% Data for left CHANNELS.
+[erpall_l, erproi_l, topo_l, statdat_l] = ed_select_results(...
+    G, conditions, 'subjects', goodsubs, 'channels', [chans_l], 'times', timewin, 'bsl_win', bsl_win, 'bsl_method', 'sub');
 
-topo1 = topo{2} - topo{1};
+% Data for right CHANNELS.
+[erpall_r, erproi_r, topo_r, statdat_r] = ed_select_results(...
+    G, conditions, 'subjects', goodsubs, 'channels', [chans_r], 'times', timewin, 'bsl_win', bsl_win, 'bsl_method', 'sub');
 
-figure;
-% subplot(2,2,1)
-topoplot(topo1, G.chanlocs, topo_opts{:}); colorbar('location', 'southoutside')
-
-%%
-
-clrs = {'b', 'b', 'r', 'r', 'k', 'k'};
-lsty = {'-', ':', '-', ':', '-', ':'};
-
-figure; hold all;
-lat_lr = []; mean_lat_lr = []; ph = []; legstr = [];
 for icond = 1:length(conditions)
+    erproi_lat{icond} = erproi_r{icond} - erproi_l{icond};
+    erproi_lat{icond} = eegfilt(erproi_lat{icond}, 256, 0, 8, 0, [], [], 'firls');
     
-    roi_l = mmean(erpall{icond}(chans_l,:,:), [1, 3]);
-    roi_r = mmean(erpall{icond}(chans_r,:,:), [1, 3]);
-    lat_lr(:, icond) = (roi_r - roi_l) ./ (roi_r + roi_l);    
-    
-%     [lat_lr(:, icond), ~, basemin, basemax] = my_bslcorrect(lat_lr(:, icond), 1, G.times./1000, [-0.200 0], 'sub');       
-    
-    legstr{icond} = sprintf('%s', [conditions{icond}{:,2}]);
-% ph(icond) = plot(G.times, erproi{icond});
-ph(icond) = plot(G.fft_freqs, lat_lr(:,icond), 'color', clrs{icond}, 'linestyle', lsty{icond});
+    statdat_lat{icond} = statdat_r{icond} - statdat_l{icond};
 end
-    
-legend(ph, legstr)
 
-% xlim([-200 4000])
-xlim([1 20])
+%
 
-%%
+xvals = G.times;
+xl = [-0500 4000];
+yl = [-4 4];
+xlbl = 'Time';
+
+fh = figure;
+movegui(fh, 'center')
+
+subplot(1,4,1); hold all
+
+ph(1) = plot(xvals, erproi_lat{1}, 'color', 'b');
+ph(2) = plot(xvals, erproi_lat{3}, 'color', 'r');
+ph(3) = plot(xvals, erproi_lat{5}, 'color', 'k');
+title('Saccade left')
+legend('Left mem', 'Right mem', 'No mem')
+xlim(xl); ylim(yl); xlabel(xlbl)
+xlines = xline([0 1000 2000 3000 4000], ':', {'Encoding', 'Pre-saccade', 'Saccade', 'Post-saccade', ' '});
+legend(ph, 'Left mem', 'Right mem', 'No mem')
+
+subplot(1,4,2); hold all
+
+ph(1) = plot(xvals, erproi_lat{2}, 'color', 'b');
+ph(2) = plot(xvals, erproi_lat{4}, 'color', 'r');
+ph(3) = plot(xvals, erproi_lat{6}, 'color', 'k', 'DisplayName', 'This is the legend for this line');
+title('Saccade right')
+xlim(xl); ylim(yl); xlabel(xlbl)
+xlines = xline([0 1000 2000 3000 4000], ':', {'Encoding', 'Pre-saccade', 'Saccade', 'Post-saccade', ' '});
+legend(ph, 'Left mem', 'Right mem', 'No mem', 'location', 'southeast')
+set(fh, 'color', 'w')
+
+subplot(1,4,3); hold all
+
+ph(1) = plot(xvals, erproi_lat{7}, 'color', 'b');
+ph(2) = plot(xvals, erproi_lat{8}, 'color', 'r');
+ph(3) = plot(xvals, erproi_lat{9}, 'color', 'k', 'DisplayName', 'This is the legend for this line');
+title('All saccades')
+xlim(xl); ylim(yl); xlabel(xlbl)
+xlines = xline([0 1000 2000 3000 4000], ':', {'Encoding', 'Pre-saccade', 'Saccade', 'Post-saccade', ' '});
+legend(ph, 'Left mem', 'Right mem', 'No mem', 'location', 'southeast')
+set(fh, 'color', 'w')
+
+subplot(1,4,4); hold all
+
+ph(1) = plot(xvals, erproi_lat{10}, 'color', 'b');
+ph(2) = plot(xvals, erproi_lat{11}, 'color', 'r');
+title('All Memory conditions')
+xlim(xl); ylim(yl); xlabel(xlbl)
+xlines = xline([0 1000 2000 3000 4000], ':', {'Encoding', 'Pre-saccade', 'Saccade', 'Post-saccade', ' '});
+legend(ph, 'Left saccade', 'Right saccade', 'location', 'southeast')
+set(fh, 'color', 'w')
 
 
-chans = 17;
-timewin = [500 2000];
-subjects = [];
-
-
-chans_l = [57 26 61 60 58 59];
-chans_r = [19 21 17 18 22 23];
+% -------------------
+% Plot topo
+% -------------------
 topo_opts= {'conv', 'off', 'electrodes', 'on', ...
     'numcontour', 3, ...
     'maplimits', 'absmax', 'whitebk', 'on', ...
     'emarker2', {[chans_l chans_r],'.','w',18,1}};
 
-lat_lr = (mmean(erpall(chans_r,:,:) - erpall(chans_l,:,:), [1])) ./ ...
-    (mmean(erpall(chans_r,:,:) + erpall(chans_l,:,:), [1]));
+topo_all_lat = topo_l{7} - topo_l{8};
 
-[lat_lr, ~, basemin, basemax] = my_bslcorrect(lat_lr, 1, G.times, [-0.200 0], 'sub');
+fh2 = figure;
+topoplot(topo_all_lat, G.chanlocs, topo_opts{:}); colorbar('location', 'southoutside')
 
-figure; hold all;
-for i = 1:length(conditions)
-    ph(i) = plot(G.times, lat_lr(:,i));
-    legstr{i} = sprintf('%s', [conditions{i}{:,2}]);
-end
-
-legend(ph, legstr)
-% figure
-% topoplot(diff(topo), G.chanlocs, topo_opts{:});
-
-xlim([-200 4000])
-yline(0)
+movegui(fh2, 'center')
 %%
-[lateralization, ipsi, contra, ll, rl, lr, rr] = eeg_lateralization(chans_l, chans_r, ...
-    erpall(:,:,1), erpall(:,:,2), 1);
-
-figure; hold all
-plot(G.times, ipsi)
-plot(G.times, contra)
-legend('ipsi', 'contra')
-
+% bxh = figure; hold all
+% boxplot([statdat_lat{1} statdat_lat{2} statdat_lat{3} statdat_lat{4} statdat_lat{5} statdat_lat{6}])
+% % boxplot([statdat_lat{3} statdat_lat{4}])
+% % boxplot([statdat_lat{5} statdat_lat{6}])
+% movegui(bxh, 'center')
