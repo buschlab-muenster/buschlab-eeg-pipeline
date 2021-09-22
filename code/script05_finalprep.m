@@ -24,21 +24,30 @@ parfor(isub = 1:length(subjects), nthreads)
     % Load the dataset and initialize the list of bad ICs.
     % --------------------------------------------------------------
     EEG = pop_loadset('filename', subjects(isub).name, 'filepath', subjects(isub).folder);    
-    
+     
+    EEG = pop_rmbase(EEG, [], []);
+    EEG = eeg_detrend(EEG);   
+
+%     EEG = pop_reref(EEG, [], 'keepref','on', ...
+%         'exclude',[max(cfg.chans.EEGchans)+1:EEG.nbchan] );
+
+     % --------------------------------------------------------------
+     % Optional interpolation of bad channels, defined as channels with
+     % large standard deviation.
+     % --------------------------------------------------------------
+    if cfg.final.do_channel_interp
+       EEG = func_final_channelinterp(EEG, joinstructs(cfg.chans, cfg.final));         
+    end    
     % --------------------------------------------------------------
     % Do a last round of trial rejection to get rid of trials with huge
     % amplitudes. This important for a few datasets with strong sweat
     % artifacts.
     % --------------------------------------------------------------
-    EEG = pop_rmbase(EEG, [], []);
-    EEG = eeg_detrend(EEG);   
-    
-    EEG = pop_reref(EEG, [], 'keepref','on', ...
-        'exclude',[max(cfg.chans.EEGchans)+1:EEG.nbchan] );
-        
     [EEG, i] = pop_eegthresh(EEG, 1, cfg.chans.EEGchans, ...
         -cfg.final.rejthresh_post_ica, cfg.final.rejthresh_post_ica, ...
         EEG.xmin, EEG.xmax, 1, 1);
+    
+    EEG.rejected_trials = [EEG.rejected_trials i];
     
     
     % --------------------------------------------------------------
