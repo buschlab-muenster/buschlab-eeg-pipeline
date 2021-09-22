@@ -144,6 +144,7 @@ cfg.ica.opticat_rm_epochmean = true;% CFG.opticat_rm_epochmean = true; % subtrac
 %% ------------------------------------------
 % ICA rejection parameters
 % ------------------------------------------
+cfg.icareject.confirm_manual   = false;
 cfg.icareject.do_correlate_eog = true;
 cfg.icareject.do_eyetrackerica = true;
 cfg.icareject.do_iclabel       = true; % Select components based on IClabel classifier?
@@ -175,7 +176,9 @@ cfg.icareject.iclabel_min_acc = 0.5;% 0.75;%was: 0.75; %50% is not chance, but s
 % Final preprocessing after ICA.
 % ------------------------------------------
 cfg.final.rejthresh_post_ica = 150;
-
+cfg.final.do_channel_interp = true;
+cfg.final.channel_interp_zthresh = 3.5;
+cfg.final.channel_interp_method = 'spherical';
 
 %% ------------------------------------------
 % Parameters for filter-hilbert.
