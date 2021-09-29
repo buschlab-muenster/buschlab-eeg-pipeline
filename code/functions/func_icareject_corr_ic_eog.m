@@ -1,4 +1,4 @@
-function [badics, corr_eeg_ic] = find_bad_ics(EEG, eog_chans, corrthreshold)
+function [badics, corr_ic_eeg] = find_bad_ics(EEG, eog_chans, corrthreshold)
 % function [badics] = find_bad_ics(EEG, eog_chans, corrthreshold)
 % This function automatically determines "bad" independent components.
 % "Bad" ist defined as a component that correlates strongly with any of the
@@ -14,35 +14,37 @@ function [badics, corr_eeg_ic] = find_bad_ics(EEG, eog_chans, corrthreshold)
 clear EEG.icaact;
 EEG = eeg_checkset(EEG, 'ica');
 
-
+%%
 % Loop over ICs, compute their correlation with the EOG channels and test
 % if the correlation exceeds the threshold.
-for ieogchan = 1:length(eog_chans)
-    
+n_eog = length(eog_chans);
+n_ics = size(EEG.icaact,1);
+badics = zeros(n_ics, 1);
+corr_ic_eeg = nan(n_ics, n_eog);
+
+for ieogchan = 1:n_eog    
     eeg = EEG.data(eog_chans(ieogchan),:);
     
-    for icomp = 1:size(EEG.icaact,1)        
+    for icomp = 1:n_ics        
         ic = EEG.icaact(icomp,:);        
         corr_tmp = corrcoef(ic, eeg);
-        corr_eeg_ic(icomp,ieogchan) = corr_tmp(1,2);        
+        corr_ic_eeg(icomp, ieogchan) = corr_tmp(1,2);        
     end
-    
-    badics{ieogchan} = find(abs(corr_eeg_ic(:,ieogchan)) >= corrthreshold)';
-    badics_corr{ieogchan} = corr_eeg_ic(badics{ieogchan},ieogchan);
 end
+
+badics = any(abs(corr_ic_eeg) > corrthreshold, 2);
 
 % Print result to command line.
-fprintf('Found %d bad ICs.\n', length(unique([badics{:}])))
+fprintf('Found %d bad ICs.\n', sum(badics))
 
-for ieogchan = 1:length(eog_chans)
-    for ibad = 1:length(badics{ieogchan})
-        fprintf('IC %02d: correlates with channel %d (%s): r = %2.2f.\n', ...
-            badics{ieogchan}(ibad), ...
-            eog_chans(ieogchan), ...
-            EEG.chanlocs(eog_chans(ieogchan)).labels, ...
-            badics_corr{ieogchan}(ibad))
+bad_idx = find(badics);
+for ibad = 1:length(bad_idx)
+    
+    fprintf('IC %02d: correlates with channels ', bad_idx(ibad));    
+    
+    for ieogchan = 1:n_eog
+        fprintf('%d (%s): %2.2f. ', eog_chans(ieogchan), EEG.chanlocs(eog_chans(ieogchan)).labels, corr_ic_eeg(bad_idx(ibad), ieogchan))
+        
     end
+    fprintf('\n')
 end
-
-% Return a list with the bad ICs.
-badics = unique([badics{:}]);
