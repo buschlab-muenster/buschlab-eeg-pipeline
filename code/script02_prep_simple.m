@@ -51,8 +51,11 @@ parfor(isub = 1:length(subjects), nthreads) % set nthreads to 0 for normal for l
     rejinds = find(tmpeeg.reject.rejthresh | tmpeeg.reject.rejjp);
     
     % Reject those bad trials from the raw data.
-    EEGbad = pop_select( EEG, 'trial',   rejinds);
-    EEG    = pop_select( EEG, 'notrial', rejinds);
+    EEGbad = eeg_emptyset; % Initialize with an empyt set in case no bad trials are found.
+    if ~isempty(rejinds)
+        EEGbad = pop_select( EEG, 'trial',   rejinds);
+        EEG    = pop_select( EEG, 'notrial', rejinds);
+    end
     EEG.rejected_trials = rejinds;
         
     % ----------------------------------------------------------
