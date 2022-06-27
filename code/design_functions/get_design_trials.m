@@ -1,4 +1,4 @@
-function [condinfo] = get_design_trials(EEG, DINFO)
+function [condinfo] = get_design_trials(events, DINFO)
 
 % Helper function that returns for a given EEG set file trial indices
 % corresponding to each of the conditions of a design.
@@ -7,12 +7,10 @@ function [condinfo] = get_design_trials(EEG, DINFO)
 % Loop across all conditions.
 for icondition = 1:length(DINFO.design_matrix)
     
-%     fprintf('Finding trials for condition %d of %d. ', ...
-%         icondition, length(DINFO.design_matrix))
     
     % Loop over all factors in the design and get the trials for the levels
     % that define the current condition
-    eegevents = zeros(DINFO.nfactors, size(EEG.event,2)); %preallocate
+    eegevents = zeros(DINFO.nfactors, size(events,2)); %preallocate
     for ifactor = 1:DINFO.nfactors
         
         % Determine current factor name and factor level.
@@ -34,56 +32,53 @@ for icondition = 1:length(DINFO.design_matrix)
         
         if ~its_main
             if its_char %single string to be matched
-                eegevents(ifactor,:) = strget(EEG, factor_name, factor_value);
+                eegevents(ifactor,:) = strget(events, factor_name, factor_value);
             elseif its_fun %single function handle to be matched
-                eegevents(ifactor,:) = funget(EEG, factor_name, factor_value);
+                eegevents(ifactor,:) = funget(events, factor_name, factor_value);
             else %number(s) to be matched
-                eegevents(ifactor,:) = numget(EEG, factor_name, factor_value);
+                eegevents(ifactor,:) = numget(events, factor_name, factor_value);
             end
         elseif its_main %if it's a main effect, we need to match all levels
             for ilevel = 1:length(factor_value)
                 clear foo
                 if its_char(ilevel) %single string to be matched
-                    foo = strget(EEG, factor_name, factor_value{ilevel});
+                    foo = strget(events, factor_name, factor_value{ilevel});
                 elseif its_fun(ilevel) %single function handle to be matched
-                    foo = funget(EEG, factor_name, factor_value{ilevel});
+                    foo = funget(events, factor_name, factor_value{ilevel});
                 else %number(s) to be matched
-                    foo = numget(EEG, factor_name, factor_value{ilevel});
+                    foo = numget(events, factor_name, factor_value{ilevel});
                 end
                 eegevents(ifactor,:) = eegevents(ifactor,:) | foo;
             end
         end
-        sanitycheck(eegevents, EEG, factor_name, factor_level, ifactor);
+%         sanitycheck(eegevents, events, factor_name, factor_level, ifactor);
         condinfo(icondition).level{ifactor} = factor_level;
     end
     
     % in case we have more than two factors, the detected events are split
-    % into
+    % into 
     if DINFO.nfactors > 1
         eegevents = all(eegevents);
     end
     
-    condinfo(icondition).trials = unique([EEG.event(eegevents).epoch]);
-    
-%     fprintf('%d trials found\n', length(condinfo(icondition).trials));
-    
+    condinfo(icondition).trials = unique([events(eegevents).epoch]);    
     
 end
 end
 
-function [eegevents] = strget(EEG, factor_name, factor_value)
+function [eegevents] = strget(events, factor_name, factor_value)
 try
-    eegevents = ismember({EEG.event.(factor_name)}, factor_value);
+    eegevents = ismember({events.(factor_name)}, factor_value);
 catch
-    eegevents = ismember([EEG.event.(factor_name)], factor_value);
+    eegevents = ismember([events.(factor_name)], factor_value);
 end
 end
 
-function [eegevents] = funget(EEG, factor_name, factor_value)
-eegevents = cellfun(factor_value, {EEG.event.(factor_name)});
+function [eegevents] = funget(events, factor_name, factor_value)
+eegevents = cellfun(factor_value, {events.(factor_name)});
 end
 
-function [eegevents] = numget(EEG, factor_name, factor_value)
+function [eegevents] = numget(events, factor_name, factor_value)
 %NB: I round the values in the EEG.event structure in case we
 % are daling with response times, etc. E.G. if the design
 % defines a factor level with values [1:200] meaning
@@ -93,8 +88,8 @@ function [eegevents] = numget(EEG, factor_name, factor_value)
 %WM: this is dangerous. In a preliminary analysis with hitrates
 %istead of RTs, it led to very unexpected behavior without
 %hints. So let's warn about that!
-preelem = numel(unique([EEG.event.(factor_name)]));
-roundelem = numel(unique(round([EEG.event.(factor_name)])));
+preelem = numel(unique([events.(factor_name)]));
+roundelem = numel(unique(round([events.(factor_name)])));
 if preelem ~= roundelem
     msg = sprintf(['\nIn your get_design.m, you specified '...
         '(a range of) numbers to be used to index variable'...
@@ -108,21 +103,21 @@ if preelem ~= roundelem
     warning(msg);
 end
 
-eegevents = ismember(round([EEG.event.(factor_name)]), factor_value);
+eegevents = ismember(round([events.(factor_name)]), factor_value);
 end
 
-function [] = sanitycheck(eegevents, EEG, factor_name, factor_level, ifactor)
-percIncl = (sum(eegevents(ifactor,:))/EEG.trials)*100;
-if percIncl < 5
-    wrn = sprintf(['\n#####!DANGERZONE!########'...
-        '\n###################################'...
-        '\n###################################'...
-        '\nFactor %s, level %i is just %.2f%% of'...
-        ' trials. Is that intended?'...
-        '\n###################################'...
-        '\n###################################'...
-        '\n###################################'],...
-        factor_name, factor_level, percIncl);
-    warning(wrn);
-end
-end
+% function [] = sanitycheck(eegevents, events, factor_name, factor_level, ifactor)
+% percIncl = (sum(eegevents(ifactor,:))/EEG.trials)*100;
+% if percIncl < 5
+%     wrn = sprintf(['\n#####!DANGERZONE!########'...
+%         '\n###################################'...
+%         '\n###################################'...
+%         '\nFactor %s, level %i is just %.2f%% of'...
+%         ' trials. Is that intended?'...
+%         '\n###################################'...
+%         '\n###################################'...
+%         '\n###################################'],...
+%         factor_name, factor_level, percIncl);
+%     warning(wrn);
+% end
+% end

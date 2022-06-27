@@ -1,4 +1,4 @@
-function [EEG] = elektro_prepfilter(EEG, cfg)
+function [EEG] = func_import_filter(EEG, cfg)
 %
 % wm: THIS FUNCTION STILL NEEDS A PROPER DOCUMENTATION!
 
@@ -40,8 +40,8 @@ if cfg.do_hp_filter
         
         case {'butterworth', 'butter'} % This is a function of the separate ERPlab toolbox.
 %             [EEG, com] = pop_ERPLAB_butter1( EEG, cfg.hp_filter_limit, 0, 5); % requires ERPLAB plugin
-            
-            EEG  = pop_basicfilter( EEG, size(EEG.data,1), ...
+
+            EEG  = pop_basicfilter( EEG, 1:EEG.nbchan, ...
                 'Cutoff',  cfg.hp_filter_limit, ...
                 'Design', 'butter', 'Filter', 'highpass', 'Order',  2 );           
             EEG = eegh(com, EEG);
