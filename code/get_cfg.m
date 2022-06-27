@@ -183,8 +183,10 @@ cfg.final.channel_interp_method = 'spherical';
 %% ------------------------------------------
 % Parameters for filter-hilbert.
 % ------------------------------------------
-cfg.filtbert(1).fbands = [8 12];
-cfg.filtbert(2).fbands = [7 13];
+cfg.filtbert.fbands{1} = [8 12];
+cfg.filtbert.fbands{2} = [7 13];
+cfg.filtbert.wintype = 'hamming';
+cfg.filtbert.transbw = 1;
 
 
 %% ------------------------------------------

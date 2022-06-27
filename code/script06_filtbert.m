@@ -13,9 +13,10 @@ do_overwrite = true;
 
 for iband = 1:length(cfg.filtbert)
     suffix_out = ['filtbert_' ...
-        num2str(cfg.filtbert(iband).fbands(1)) '_' ...
-        num2str(cfg.filtbert(iband).fbands(2))];
+        num2str(cfg.filtbert.fbands{iband}(1)) '_' ...
+        num2str(cfg.filtbert.fbands{iband}(2)) tag];
     subjects{iband} = get_list_of_subjects(cfg.dir, do_overwrite, suffix_in, suffix_out);
+
 end
 
 %% Run across subjects.
@@ -34,7 +35,7 @@ parfor(isub = 1:length(subjects{1}), nthreads)
     % compute power, and save data.
     % --------------------------------------------------------------
     for iband = 1:length(cfg.filtbert)        
-        EEGout = func_filtbert(EEGin, cfg.filtbert(iband));           
+        EEGout = func_filtbert(EEGin, joinstructs(cfg.chans, cfg.filtbert), iband);           
         EEGout = func_saveset(EEGout, subjects{iband}(isub));       
     end
     

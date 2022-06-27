@@ -37,16 +37,16 @@ switch data_type
         
         for iband = 1:length(cfg.filtbert)
             suffix_in = ['filtbert_' ...
-                num2str(cfg.filtbert(iband).fbands(1)) '_' ...
-                num2str(cfg.filtbert(iband).fbands(2))];
-            
+                num2str(cfg.filtbert.fbands{iband}(1)) '_' ...
+                num2str(cfg.filtbert.fbands{iband}(2))];
+
             subjects{iband} = get_list_of_subjects(cfg.dir, true, suffix_in, '');
-            
+
             G = ed_grandaverage(subjects{iband}, design, data_type);
-            
+
             grand_name = ['grand' '_d' num2str(design_idx) '_' data_type '_' ...
-                num2str(cfg.filtbert(iband).fbands(1)) '_' ...
-                num2str(cfg.filtbert(iband).fbands(2))];
+                num2str(cfg.filtbert.fbands{iband}(1)) '_' ...
+                num2str(cfg.filtbert.fbands{iband}(2))];
             save(fullfile(cfg.dir.grand, grand_name), 'G')
         end
         
