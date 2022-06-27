@@ -35,7 +35,7 @@ switch data_type
         
     case 'filtbert'
         
-        for iband = 1:length(cfg.filtbert)
+        for iband = 1:length(cfg.filtbert.fbands) 
             suffix_in = ['filtbert_' ...
                 num2str(cfg.filtbert.fbands{iband}(1)) '_' ...
                 num2str(cfg.filtbert.fbands{iband}(2))];
