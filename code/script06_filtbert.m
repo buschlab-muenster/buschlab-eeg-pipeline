@@ -34,7 +34,7 @@ parfor(isub = 1:length(subjects{1}), nthreads)
     % For each pass-band, run band-pass filter, hilbert transform, 
     % compute power, and save data.
     % --------------------------------------------------------------
-    for iband = 1:length(cfg.filtbert)        
+    for iband = 1:length(cfg.filtbert.fbands)
         EEGout = func_filtbert(EEGin, joinstructs(cfg.chans, cfg.filtbert), iband);           
         EEGout = func_saveset(EEGout, subjects{iband}(isub));       
     end
