@@ -100,7 +100,7 @@ parfor(isub = 1:length(subjects), nthreads) % set nthreads to 0 for normal for l
     % of those is a strong HP filter. But if we don't use a HP filter, we
     % should do a simple BSL correction instead.
     if cfg.ica.do_ICA_hp_filter == false
-        EEG = pop_rmbase(EEG, [], []);
+        EEG = pop_rmbase(EEG, [], [], cfg.chans.EEGchans);
     end
 
     if cfg.ica.ica_ncomps == 0

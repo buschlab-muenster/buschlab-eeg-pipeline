@@ -33,7 +33,7 @@ parfor(isub = 1:length(subjects), nthreads) % set nthreads to 0 for normal for l
     % extreme amplitudes gets confused if there are still some DC
     % shifts in the raw data. However, we apply the trial rejection to
     % the un-baseline corrected data, because ICA likes that better.
-    tmpeeg = pop_rmbase(EEG, [], []);
+    tmpeeg = pop_rmbase(EEG, [], [], cfg.chans.EEGchans);
     
     % Reject trials with extreme amplitude values.
     [tmpeeg, ~] = pop_eegthresh(tmpeeg, 1, cfg.chans.EEGchans, ...

@@ -25,7 +25,7 @@ parfor(isub = 1:length(subjects), nthreads)
     % --------------------------------------------------------------
     EEG = pop_loadset('filename', subjects(isub).name, 'filepath', subjects(isub).folder);    
      
-    EEG = pop_rmbase(EEG, [], []);
+    EEG = pop_rmbase(EEG, [], [], cfg.chans.EEGchans);
     EEG = eeg_detrend(EEG);   
 
 %     EEG = pop_reref(EEG, [], 'keepref','on', ...
