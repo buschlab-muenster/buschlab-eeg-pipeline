@@ -19,9 +19,6 @@ EEG = pop_firws(EEG, 'fcutoff', EEG.filtbert_fband, 'ftype', 'bandpass', ...
     'wtype', cfg.wintype, 'forder', m, 'minphase', 0, 'usefftfilt', 0, ...
     'plotfresp', 0, 'causal', 0);
 
-% Paste our temporary copy of unfiltered EOG/eye tracking channels.
-EEG.data(cfg.EEGchans+1:end) = tmp_data;
-
 % 
 % tic
 % for ichan = 1:size(EEG.data,1)
@@ -39,6 +36,9 @@ EEG.data = permute(EEG.data, [2 1 3]);
 EEG.data = abs(hilbert(EEG.data)).^2;
 EEG.data = ipermute(EEG.data, [2 1 3]);
 % toc
+
+% Paste our temporary copy of unfiltered EOG/eye tracking channels.
+EEG.data(cfg.EEGchans+1:end) = tmp_data;
 
 EEG.data = single(EEG.data);
 
