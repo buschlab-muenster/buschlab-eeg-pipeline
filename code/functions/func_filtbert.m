@@ -11,7 +11,8 @@ EEG.filtbert_fband = cfg.fbands{iband};
 % pop_firws does not allow filtering only a subset of trials, but we do not
 % want to filter the EOG and eye tracking channels. We make a temporary
 % copy of these channels.
-tmp_data = EEG.data(cfg.EEGchans+1:end);
+non_eeg_chans = max(cfg.EEGchans)+1:EEG.nbchan;
+tmp_data = EEG;
 
 m = pop_firwsord(cfg.wintype, EEG.srate, cfg.transbw);
 
@@ -38,7 +39,7 @@ EEG.data = ipermute(EEG.data, [2 1 3]);
 % toc
 
 % Paste our temporary copy of unfiltered EOG/eye tracking channels.
-EEG.data(cfg.EEGchans+1:end) = tmp_data;
+EEG.data(non_eeg_chans,:,:) = tmp_data.data(non_eeg_chans,:,:);
 
 EEG.data = single(EEG.data);
 
