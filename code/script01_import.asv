@@ -29,19 +29,23 @@ for isub = 5:length(subjects)
     % --------------------------------------------------------------
     EEG = func_import_readbdf(cfg.dir, subjects(isub).name);
     
+    % Hack for renaming channel labels in AlphaIcon.
+    EEG.chanlocs(66).labels = 'AFp9';
+    EEG.chanlocs(67).labels = 'AFp10';
+
+    EEG.chanlocs(64).labels = 'IO2';
+    EEG.chanlocs(63).labels = 'M1';
+    EEG.chanlocs(62).labels = 'M2';
+
+    
     
     % --------------------------------------------------------------
     % Select data channels.
     % --------------------------------------------------------------
-    
-    % Hack for renaming incorrectly labeled channel in AlphaIcon.
-    EEG.chanlocs(66).labels = 'AFp9';
-    EEG.chanlocs(67).labels = 'AFp10';
-
     EEG = func_import_selectchans(EEG, cfg.chans);
     
-    % Use this line to verify the accuracy of channel labels and locations.
-    % figure; topoplot([],EEG.chanlocs,'style','blank','electrodes','labelpoint','chaninfo',EEG.chaninfo);
+    % Use this
+    figure; topoplot([],EEG.chanlocs,'style','blank','electrodes','labelpoint','chaninfo',EEG.chaninfo);
 
     % --------------------------------------------------------------
     % Biosemi is recorded reference-free. We apply rereferencing in

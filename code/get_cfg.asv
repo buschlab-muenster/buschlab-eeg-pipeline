@@ -32,7 +32,7 @@ cfg.chans.VEOGchan = 68; % We will create this additional channel for the VEOG.
 cfg.chans.HEOGchan = 69; % We will create this additional channel for the HEOG.
 cfg.chans.VEOGin = {[42], [65]}; % VEOG is computed by subtracting these two (sets of) channels.
 cfg.chans.HEOGin = {[66], [67]}; % HEOG is computed by subtracting these two (sets of) channels.
-cfg.chans.chanlocs_custom =   'Custom_M34_V3_Easycap_Layout_EEGlab.sfp'; % Channel locations for our custom-made EEG caps.
+cfg.chans.chanlocs_custom =   'Custom_M34_V3_Easycap_Layout_3eog_chans.ced'; % Channel locations for our custom-made EEG caps.
 cfg.chans.chanlocs_standard = 'standard-10-5-cap385.elp'; % EEGLAB's standard lookup table.
 
 
