@@ -20,6 +20,18 @@
             }
           },
           {
+            "id": "d90d9c546dd056af",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Design principles.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          },
+          {
             "id": "c092309b3f68f3f8",
             "type": "leaf",
             "state": {
@@ -172,8 +184,9 @@
   },
   "active": "b71e9e9e11711902",
   "lastOpenFiles": [
-    "christophe-dion-3KA1M16PuoE-unsplash.jpg",
+    "Design principles.md",
     "Table of Contents.md",
+    "christophe-dion-3KA1M16PuoE-unsplash.jpg",
     "Setting up your EEG analysis.md",
     "Pasted image 20230707082005.png",
     "Before you start recording.md"
