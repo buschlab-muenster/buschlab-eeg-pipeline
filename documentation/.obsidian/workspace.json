@@ -1,0 +1,181 @@
+{
+  "main": {
+    "id": "d527e2df7f9e62f1",
+    "type": "split",
+    "children": [
+      {
+        "id": "579c80f4396110d0",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "b71e9e9e11711902",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Table of Contents.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          },
+          {
+            "id": "c092309b3f68f3f8",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Setting up your EEG analysis.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          },
+          {
+            "id": "abc07b2c38564f8d",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Before you start recording.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "3cd6d4299589dda6",
+    "type": "split",
+    "children": [
+      {
+        "id": "bd218d67c0ca94eb",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "58dbac6e28a9d028",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical"
+              }
+            }
+          },
+          {
+            "id": "783f25dbfb63f51c",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              }
+            }
+          },
+          {
+            "id": "ee97413efcef3e14",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {}
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "26d73862dfbc697d",
+    "type": "split",
+    "children": [
+      {
+        "id": "3d7ff0e1e961eed1",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "d05337e7589c3b11",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "Table of Contents.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          },
+          {
+            "id": "82950553faaa796c",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "Table of Contents.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          },
+          {
+            "id": "9b547c50e46981e9",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true
+              }
+            }
+          },
+          {
+            "id": "5e294a8a74d719b5",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "Table of Contents.md"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false
+    }
+  },
+  "active": "b71e9e9e11711902",
+  "lastOpenFiles": [
+    "christophe-dion-3KA1M16PuoE-unsplash.jpg",
+    "Table of Contents.md",
+    "Setting up your EEG analysis.md",
+    "Pasted image 20230707082005.png",
+    "Before you start recording.md"
+  ]
+}
