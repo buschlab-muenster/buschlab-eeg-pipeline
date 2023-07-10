@@ -10,7 +10,7 @@ Photo by <a href="https://unsplash.com/@izzyjiang?utm_source=unsplash&utm_medium
 
 # Table of contents
 
-- [Before](./documentation/before_recording.m)
+- [Before](./documentation/before_recording.md)
 
 
 
