@@ -31,6 +31,7 @@ switch(strip(computername))
     
     case 'LABSERVER1'
         dir_toolboxes = '/data3/Niko/buschlab-pipeline-dev/tools/';
+%         dir_toolboxes = '/data3/alphaicon/tools/';
 %         dir_myutils = '~/Code/Github/My-utilities/';
         prefs.max_threads = maxThreads - 1;
 %         
@@ -51,7 +52,8 @@ switch(strip(computername))
         
 end
 
-addpath([dir_toolboxes, 'eeglab2023.0']);
+addpath([dir_toolboxes, 'eeglab']);
+eeglab nogui
 
 % ------------------------------------------------------------------------
 % Now set the number of threads for this machine.
