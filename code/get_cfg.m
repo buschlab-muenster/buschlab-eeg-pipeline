@@ -1,49 +1,88 @@
 function cfg = get_cfg
 
-[~, computername] = system('hostname');
+%% On which machine is this running?
+% This can be useful if you are using this code on different machines, e.g.
+% on labserver1 but also on your local machine.
+[~, cfg.system.computername] = system('hostname');
 
-switch(strip(computername))
-    
+switch(strip(cfg.system.computername))    
     case 'LABSERVER1'
-        rootdir = '/data3/Niko/';
+        rootdir = '/data3/';
+        cfg.system.max_threads = 10;
     case 'busch02'
         rootdir = 'Y:\Niko\';
-    case 'X1YOGA'
-        rootdir = 'Z:\Niko\';
     case 'busch-x1-2021'
-        rootdir = 'C:\Users\nbusch\OneDrive\Desktop\';
-        
+        rootdir = 'C:\Users\nbusch\OneDrive\Desktop\';        
 end
 
 
-%% Directories
-cfg.dir.main     = fullfile(rootdir, 'ROSA-project/ROSA3/');
-cfg.dir.raw      = fullfile(cfg.dir.main, 'data', 'rawdata/');
-cfg.dir.bdf      = fullfile(cfg.dir.raw, 'BDF/');
-cfg.dir.raweye   = fullfile(cfg.dir.raw, 'EDF/');
-cfg.dir.behavior = fullfile(cfg.dir.raw, 'Logfiles/');
-cfg.dir.eye      = fullfile(cfg.dir.main, 'data', 'EYE/');
-cfg.dir.eeg      = fullfile(cfg.dir.main, 'data', 'EEG/');
-cfg.dir.tf       = fullfile(cfg.dir.main, 'data', 'TF/');
-cfg.dir.grand    = fullfile(cfg.dir.main, 'data', 'GRAND/');
+%% Set directories and add relevant directories to the path.
+
+% Top level directory of this project.
+cfg.dir.main     = fullfile(rootdir, '/Niko/buschlab-pipeline-dev/');
+
+% Subfolder with raw data.
+cfg.dir.raw      = fullfile(cfg.dir.main, 'data/raw/');
+cfg.dir.bdf      = fullfile(cfg.dir.raw, 'bdf/'); % Biosemi bdf files.
+cfg.dir.raweye   = fullfile(cfg.dir.raw, 'edf/'); % Eyelink edf files.
+cfg.dir.behavior = fullfile(cfg.dir.raw, 'behavioral/'); % Behavioral data from Psychtoolbox.
+
+% Output directories where data are stored after import.
+cfg.dir.eye      = fullfile(cfg.dir.main, 'data', 'eye/');
+cfg.dir.eeg      = fullfile(cfg.dir.main, 'data', 'eeg/');
+cfg.dir.tf       = fullfile(cfg.dir.main, 'data', 'tf/');
+cfg.dir.grand    = fullfile(cfg.dir.main, 'data', 'grand/');
+
+% Where is the EEGLAB toolbox located?
+cfg.dir.eeglab   = fullfile(cfg.dir.main, 'tools/eeglab/');
+
+addpath('./functions')
+addpath('./files')
+addpath(cfg.dir.eeglab)
 
 
 %% Information about channel structure.
-cfg.chans.EEGchans = 1:69;
-% cfg.chans.data_chans = cfg.EEGchans; % redundant, but some electrpipe functions expect a field with this name.
-cfg.chans.VEOGchan = 70;
-cfg.chans.HEOGchan = 71;
+
+% These channels were actually recorded.
+cfg.chans.EEGchans = 1:67;
+
+% We will add additional channels for VEOG and HEOG, which are based on
+% subtracting a set of electrodes above/below and left/right of the eyes.
+cfg.chans.VEOGchan = 68;
+cfg.chans.HEOGchan = 69;
 cfg.chans.VEOGin = {[42], [65]};
-cfg.chans.HEOGin = {[ 2], [51]};
-cfg.chans.chanlocfile_custom   = 'Custom_M34_V3_Easycap_Layout_EEGlab.sfp';
-cfg.chans.chanlocfile_standard = 'standard-10-5-cap385.elp'; %This is EEGLAB's standard lookup table.
+cfg.chans.HEOGin = {[66], [67]};
+
+% We use these files to import the channel coordinates. The "custom" file
+% is for the electrodes on the cap with Axx/Bxx labels. We use the
+% "standard" file for any remaining channels with 10/20 labels, e.g. the
+% electrodes around the eye (e.g. IO1, AFp10) or mastoids (M1, M2).
+% cfg.chans.chanlocfile_custom   = 'Custom_M34_V3_Easycap_Layout_3eog_chans.ced';
+cfg.chans.chanlocs_custom   = 'Custom_M34_V3_Easycap_Layout_EEGlab.sfp';
+cfg.chans.chanlocs_standard = 'standard-10-5-cap385.elp'; %This is EEGLAB's standard lookup table.
+
+
+%% Eyelink related input
+% Do you want to coregister eyelink eyetracking data?
+cfg.eyetrack.coregister_Eyelink = true;% CFG.coregister_Eyelink = 1; %0=don't coregister
+
+% Coregistration is done by using the first instance of the first value and
+% the last instance of the second value. Everything inbetween is downsampled
+% and interpolated.
+cfg.eyetrack.eye_startEnd = [40 50];% CFG.eye_startEnd       = []; % e.g., [10,20]
+
+% After data has been coregistered, eyetracking data will be included in
+% the EEG struct. Do you want to keep the eyetracking-only files (ASCII &
+% mat)? This would speed up the data importing if you need to run
+% script01_import once again.
+cfg.eyetrack.eye_keepfiles = [1 1];% CFG.eye_keepfiles      = [0 0];
 
 
 %% Preprocessing raw data.
 cfg.prep.do_resampling = 1;
 cfg.prep.new_sampling_rate = 256;
 cfg.prep.do_rereference = 1;
-cfg.prep.reref_chan = []; % 48=channel CZ. 31=Pz. []=average ref.
+cfg.prep.reref_chan = 32; % 48=channel CZ. 31=Pz. []=average ref.
 
 cfg.prep.do_hp_filter = true;% CFG.do_hp_filter = 1;
 cfg.prep.hp_filter_type = 'butter';% CFG.hp_filter_type = 'eegfiltnew'; % or 'butterworth', 'eegfiltnew' or kaiser - not recommended
@@ -59,9 +98,8 @@ cfg.prep.lp_filter_tbandwidth = 5;% CFG.lp_filter_tbandwidth = 5;
 cfg.prep.do_notch_filter = false;
 
 %% Triggers and epochs
-cfg.epoch.tlims = [-1 4.5];
-cfg.epoch.image_onset_triggers = [18, 21, 24, 27, 19, 22, 25, 28, 20, 23, 26, 29];
-cfg.epoch.trig_target = 20;% CFG.trig_target = []; %e.g., [21:29, 200:205]
+cfg.epoch.tlims = [-1.5 1];
+cfg.epoch.trig_target = [21:29];% CFG.trig_target = []; %e.g., [21:29, 200:205]
 cfg.epoch.trigger_device = 'lowbyte-PC';% CFG.trigger_device = 'lowbyte-PC'; % can be [],'lowbyte-PC' or 'highbyte-VPixx'
 cfg.epoch.keep_continuous = false;
 
@@ -83,7 +121,7 @@ cfg.epoch.trial_omit = [];% CFG.trial_omit  = [];
 % specified here. Currently this can result in problems with the
 % coregistration of behavioral data. So think about what you're doing!
 cfg.epoch.trig_omit_inv_mode = 'AND';% CFG.trig_omit_inv_mode = 'AND'; % 'AND' or 'OR'. Should trials that do not include all of these triggers (AND) or trials that do not include any of these triggers be removed?
-cfg.epoch.trig_omit_inv = 60;% CFG.trig_omit_inv = [];
+cfg.epoch.trig_omit_inv = [];% CFG.trig_omit_inv = [];
 
 % Important for matching EEG data and behavioral log files.
 % Did you use online-eyetracking to mark bad trials in your logfile?
@@ -91,21 +129,6 @@ cfg.epoch.trig_omit_inv = 60;% CFG.trig_omit_inv = [];
 % this information. Check func_importbehavior for more information.
 cfg.epoch.badgaze_fieldname = 'badgaze';% CFG.badgaze_fieldname = '';
 cfg.epoch.deletebadlatency = 0;
-
-
-%% Eyelink related input
-% Do you want to coregister eyelink eyetracking data?
-cfg.eyetrack.coregister_Eyelink = true;% CFG.coregister_Eyelink = 1; %0=don't coregister
-
-% Coregistration is done by using the first instance of the first value and
-% the last instance of the second value. Everything inbetween is downsampled
-% and interpolated.
-cfg.eyetrack.eye_startEnd = [10 125];% CFG.eye_startEnd       = []; % e.g., [10,20]
-
-% After data has been coregistered, eyetracking data will be included in
-% the EEG struct. Do you want to keep the eyetracking-only files (ASCII &
-% mat)?
-cfg.eyetrack.eye_keepfiles = [1 1];% CFG.eye_keepfiles      = [0 0];
 
 
 %% Trial rejection before ICA.
