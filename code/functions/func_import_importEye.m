@@ -61,7 +61,9 @@ function [EEG] = elektro_importEye(EEG, subject_name, dirs, eyetrack)
 % eye_eeg_dir = dir([eeglabdir, '/plugins/EYE-EEG*']);
 % addpath(genpath([eye_eeg_dir.folder, filesep, eye_eeg_dir.name, filesep]));
 
-d = dir('../../tools/eeglab*/plugins/**/eegplugin_eye_eeg.m');
+% d = dir('../../tools/eeglab*/plugins/**/eegplugin_eye_eeg.m');
+d = dir(fullfile(dirs.eeglab, 'plugins/**/eegplugin_eye_eeg.m'));
+
 addpath(genpath(d.folder))
 
 
@@ -76,7 +78,7 @@ end
 %% ----------------------------------------------
 % Preparations
 %----------------------------------------------
-set(0,'DefaultFigureVisible','off'); %create figure in background to print it later
+% set(0,'DefaultFigureVisible','off'); %create figure in background to print it later
 curEDF = [cfg.dir.raweye subject_name '.edf'];
 [~,~,~] = mkdir(cfg.dir.eye);
 existing_files = dir(cfg.dir.eye);
@@ -170,7 +172,7 @@ end
 %% ----------------------------------------------
 % Reactivate plotting
 %----------------------------------------------
-set(0,'DefaultFigureVisible','on')
+% set(0,'DefaultFigureVisible','on')
 
 
 
