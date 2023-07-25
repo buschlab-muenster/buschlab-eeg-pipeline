@@ -5,7 +5,7 @@ function cfg = get_cfg
 switch(strip(computername))
     
     case 'LABSERVER1'
-        rootdir = '/data3/Niko/';
+        rootdir = '/data4/BuschlabPipeline/';
     case 'busch02'
         rootdir = 'Y:\Niko\';
     case 'X1YOGA'
@@ -17,11 +17,11 @@ end
 
 
 %% Directories
-cfg.dir.main     = fullfile(rootdir, 'ROSA-project/ROSA3/');
+cfg.dir.main     = fullfile(rootdir, 'AlphaIcon/');
 cfg.dir.raw      = fullfile(cfg.dir.main, 'data', 'rawdata/');
-cfg.dir.bdf      = fullfile(cfg.dir.raw, 'BDF/');
-cfg.dir.raweye   = fullfile(cfg.dir.raw, 'EDF/');
-cfg.dir.behavior = fullfile(cfg.dir.raw, 'Logfiles/');
+cfg.dir.bdf      = fullfile(cfg.dir.raw, 'bdf/');
+cfg.dir.raweye   = fullfile(cfg.dir.raw, 'edf/');
+cfg.dir.behavior = fullfile(cfg.dir.raw, 'logfiles/');
 cfg.dir.eye      = fullfile(cfg.dir.main, 'data', 'EYE/');
 cfg.dir.eeg      = fullfile(cfg.dir.main, 'data', 'EEG/');
 cfg.dir.tf       = fullfile(cfg.dir.main, 'data', 'TF/');
@@ -60,10 +60,10 @@ cfg.prep.do_notch_filter = false;
 
 %% Triggers and epochs
 cfg.epoch.tlims = [-1 4.5];
-cfg.epoch.image_onset_triggers = [18, 21, 24, 27, 19, 22, 25, 28, 20, 23, 26, 29];
-cfg.epoch.trig_target = 20;% CFG.trig_target = []; %e.g., [21:29, 200:205]
+cfg.epoch.image_onset_triggers = [2, 4, 6, 8, 11, 12, 13, 14, 15, 16];
+cfg.epoch.trig_target = [];% CFG.trig_target = []; %e.g., [21:29, 200:205]
 cfg.epoch.trigger_device = 'lowbyte-PC';% CFG.trigger_device = 'lowbyte-PC'; % can be [],'lowbyte-PC' or 'highbyte-VPixx'
-cfg.epoch.keep_continuous = false;
+%ELENA deleted: cfg.epoch.keep_continuous = false;
 
 % If you already removed faulty trials (e.g., when a subject looked away) 
 % from your logfile, then the amount of trials in the logfile does not 
@@ -83,7 +83,7 @@ cfg.epoch.trial_omit = [];% CFG.trial_omit  = [];
 % specified here. Currently this can result in problems with the
 % coregistration of behavioral data. So think about what you're doing!
 cfg.epoch.trig_omit_inv_mode = 'AND';% CFG.trig_omit_inv_mode = 'AND'; % 'AND' or 'OR'. Should trials that do not include all of these triggers (AND) or trials that do not include any of these triggers be removed?
-cfg.epoch.trig_omit_inv = 60;% CFG.trig_omit_inv = [];
+cfg.epoch.trig_omit_inv = []%60;% CFG.trig_omit_inv = [];
 
 % Important for matching EEG data and behavioral log files.
 % Did you use online-eyetracking to mark bad trials in your logfile?

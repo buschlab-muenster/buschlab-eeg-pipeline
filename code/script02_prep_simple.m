@@ -24,7 +24,14 @@ parfor(isub = 1:length(subjects), nthreads) % set nthreads to 0 for normal for l
     % Load the dataset.
     % ----------------------------------------------------------
     EEG = pop_loadset('filename', subjects(isub).name, 'filepath', subjects(isub).folder);
-    
+        
+    % --------------------------------------------------------------
+    % Downsample data if required. IMPORTANT: use resampling only after
+    % importing the eye tracking data, or else the ET data will not be in
+    % sync with EEG data.
+    % --------------------------------------------------------------
+    EEG = func_import_downsample(EEG, cfg.prep);
+               
     % ----------------------------------------------------------
     % Artifact rejection.
     % ----------------------------------------------------------

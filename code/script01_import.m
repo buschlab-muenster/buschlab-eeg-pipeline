@@ -75,25 +75,12 @@ parfor(isub = 1:length(subjects), nthreads) % set nthreads to 0 for normal for l
     % --------------------------------------------------------------
     % Import Eyetracking data.
     % --------------------------------------------------------------
-    EEG = func_import_importEye(EEG, subjects(isub).namestr, cfg.dir, cfg.eyetrack);    
-    
-    % --------------------------------------------------------------
-    % Downsample data if required. IMPORTANT: use resampling only after
-    % importing the eye tracking data, or else the ET data will not be in
-    % sync with EEG data.
-    % --------------------------------------------------------------
-    EEG = func_import_downsample(EEG, cfg.prep);
-               
-    % -------------------------------------------------------------
-    % Epoch data.
-    % --------------------------------------------------------------
-    EEG = func_import_epoch(EEG, cfg.epoch, cfg.eyetrack.coregister_Eyelink);
-    %     EEG = pop_rmbase(EEG, [], []);
+    EEG = func_import_importEye(EEG, subjects(isub).namestr, cfg.dir, cfg.eyetrack);    %Elena document that .asc file has to be named in the same way as subjects(isub).namestr 
         
     % --------------------------------------------------------------
     % Import behavioral data.
     % --------------------------------------------------------------
-    EEG = func_importBehavior(EEG, subjects(isub).namestr, cfg.dir, cfg.epoch);
+    EEG = func_importBehavior_contunuous(EEG, subjects(isub).namestr, cfg.dir, cfg.epoch);%Elena document that logfile has to be named in the same way as subjects(isub).namestr 
     
     % --------------------------------------------------------------
     % Save the new EEG file in EEGLAB format.
