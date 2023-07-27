@@ -31,6 +31,11 @@ parfor(isub = 1:length(subjects), nthreads)
     %     EEG = pop_rmbase(EEG, [], []);
     EEG = pop_rmbase(EEG, [], [], cfg.chans.EEGchans);
     EEG = eeg_detrend(EEG);   
+    
+     % --------------------------------------------------------------
+    % Import behavioral data.
+    % --------------------------------------------------------------
+    EEG = func_importBehavior(EEG, subjects(isub).namestr, cfg.dir, cfg.epoch);%Elena document that logfile has to be named in the same way as subjects(isub).namestr 
 
 %     EEG = pop_reref(EEG, [], 'keepref','on', ...
 %         'exclude',[max(cfg.chans.EEGchans)+1:EEG.nbchan] );
