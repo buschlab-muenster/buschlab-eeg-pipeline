@@ -1,25 +1,32 @@
 function cfg = get_cfg
 
-%% On which machine is this running?
+%% On which machine is this running and who is using it?
+% Set relevant directories to the path based on the user name and machine.
+
 % This can be useful if you are using this code on different machines, e.g.
 % on labserver1 but also on your local machine.
 [~, cfg.system.computername] = system('hostname');
 
-switch(strip(cfg.system.computername))    
-    case 'LABSERVER1'
-        rootdir = '/data3/';
-        cfg.system.max_threads = 10;
-    case 'busch02'
-        rootdir = 'Y:\Niko\';
-    case 'busch-x1-2021'
-        rootdir = 'C:\Users\nbusch\OneDrive\Desktop\';        
+% get user name to set paths correctly
+username = char(java.lang.System.getProperty('user.name'));
+
+% Top level directories of this project.
+if strcmp(username,'ecesnait')
+    rootdir = '/data4/';
+    cfg.dir.main     = fullfile(rootdir, '/BuschlabPipeline/Elena_dev_n_code/git/buschlab-eeg-pipeline/');% will change if I use more machines in future
+elseif strcmp(username,'nbus')
+
+    switch(strip(cfg.system.computername))
+        case 'LABSERVER1'
+            rootdir = '/data3/';
+            cfg.system.max_threads = 10;
+        case 'busch02'
+            rootdir = 'Y:\Niko\';
+        case 'busch-x1-2021'
+            rootdir = 'C:\Users\nbusch\OneDrive\Desktop\';
+    end
+    cfg.dir.main     = fullfile(rootdir, '/Niko/buschlab-pipeline-dev/');
 end
-
-
-%% Set directories and add relevant directories to the path.
-
-% Top level directory of this project.
-cfg.dir.main     = fullfile(rootdir, '/Niko/buschlab-pipeline-dev/');
 
 % Subfolder with raw data.
 cfg.dir.raw      = fullfile(cfg.dir.main, 'data/raw/');
@@ -86,13 +93,13 @@ cfg.prep.reref_chan = 32; % 48=channel CZ. 31=Pz. []=average ref.
 
 cfg.prep.do_hp_filter = true;% CFG.do_hp_filter = 1;
 cfg.prep.hp_filter_type = 'butter';% CFG.hp_filter_type = 'eegfiltnew'; % or 'butterworth', 'eegfiltnew' or kaiser - not recommended
-cfg.prep.hp_filter_limit = 0.01;% CFG.hp_filter_limit = 0.1; 
+cfg.prep.hp_filter_limit = 0.01;% CFG.hp_filter_limit = 0.1;
 % CFG.hp_filter_tbandwidth = 0.1;% CFG.hp_filter_tbandwidth = 0.2;% only used for kaiser
 % CFG.hp_filter_pbripple = 0.02;% CFG.hp_filter_pbripple = 0.01;% only used for kaiser
 
 % Do you want to low-pass filter the data?
 cfg.prep.do_lp_filter = true;% CFG.do_lp_filter = 1;
-cfg.prep.lp_filter_limit = 40;% CFG.lp_filter_limit = 45; 
+cfg.prep.lp_filter_limit = 40;% CFG.lp_filter_limit = 45;
 cfg.prep.lp_filter_tbandwidth = 5;% CFG.lp_filter_tbandwidth = 5;
 
 cfg.prep.do_notch_filter = false;
@@ -103,11 +110,11 @@ cfg.epoch.trig_target = [21:29];% CFG.trig_target = []; %e.g., [21:29, 200:205]
 cfg.epoch.trigger_device = 'lowbyte-PC';% CFG.trigger_device = 'lowbyte-PC'; % can be [],'lowbyte-PC' or 'highbyte-VPixx'
 cfg.epoch.keep_continuous = false;
 
-% If you already removed faulty trials (e.g., when a subject looked away) 
-% from your logfile, then the amount of trials in the logfile does not 
-% match the amount of trials in the EEGdata. If you sent special triggers 
-% that mark faulty trials in the EEGdata, enter them here to remove all 
-% epochs containing these triggers from your EEGdata. The result should be 
+% If you already removed faulty trials (e.g., when a subject looked away)
+% from your logfile, then the amount of trials in the logfile does not
+% match the amount of trials in the EEGdata. If you sent special triggers
+% that mark faulty trials in the EEGdata, enter them here to remove all
+% epochs containing these triggers from your EEGdata. The result should be
 % that EEGdata and Logfile match again.
 % NOTE: See below for unfold/GLM/continuous (CFG.trig_trial_onset)
 cfg.epoch.trig_omit = [];% CFG.trig_omit = [];
@@ -133,7 +140,7 @@ cfg.epoch.deletebadlatency = 0;
 
 %% Trial rejection before ICA.
 % cfg.use_asr = 0;
-cfg.rej.rejthresh_pre_ica  = 500;       
+cfg.rej.rejthresh_pre_ica  = 500;
 cfg.rej.rej_jp_singchan = 9;
 cfg.rej.rej_jp_allchans = 5;
 
@@ -152,10 +159,10 @@ cfg.ica.ica_ncomps = numel(cfg.chans.EEGchans)-2;% CFG.ica_ncomps = numel(CFG.da
 % section 'filters'.
 cfg.ica.do_ICA_hp_filter = true;% CFG.do_ICA_hp_filter = 1;
 cfg.ica.hp_ICA_filter_type = 'butterworth';% CFG.hp_ICA_filter_type = 'eegfiltnew'; % 'butterworth' or 'eegfiltnew' or kaiser - not recommended
-cfg.ica.hp_ICA_filter_limit = 2;% CFG.hp_ICA_filter_limit = 2.5; 
+cfg.ica.hp_ICA_filter_limit = 2;% CFG.hp_ICA_filter_limit = 2.5;
 % cfg.ica.hp_ICA_filter_tbandwidth = 0.2;% CFG.hp_ICA_filter_tbandwidth = 0.2;% only used for kaiser
 % cfg.ica.hp_ICA_filter_pbripple = 0.01;% CFG.hp_ICA_filter_pbripple = 0.01;% only used for kaiser
-% 
+%
 % % Olaf Dimigen recommends to overweight spike potentials using his OPTICAT
 % % approach. Do you want to do this prior to computung ICA?
 cfg.ica.ica_overweight_sp = true;% CFG.ica_overweight_sp = 1;
@@ -163,7 +170,7 @@ cfg.ica.opticat_saccade_before = -0.02;% CFG.opticat_saccade_before = -0.02; % t
 cfg.ica.opticat_saccade_after = 0.01;% CFG.opticat_saccade_after = 0.01;
 cfg.ica.opticat_ow_proportion = 0.5;% CFG.opticat_ow_proportion = 0.5; % overweighting proportion
 cfg.ica.opticat_rm_epochmean = true;% CFG.opticat_rm_epochmean = true; % subtract mean from overweighted epochs? (recommended)
-% 
+%
 %% ------------------------------------------
 % ICA rejection parameters
 % ------------------------------------------
@@ -226,7 +233,7 @@ cfg.fft(3).twin = [3000 3998]; cfg.fft(3).fft_npoints = 512;
 % cfg.num_frex = 28;
 % cfg.frex = linspace(cfg.min_freq, cfg.max_freq, cfg.num_frex);
 % cfg.fwhm_t = 2 .* 1./cfg.frex;
-% 
+%
 % %% Experimental design.
 % cfg.conditions = {
 %     {'scene_man', 1}, {'scene_man', 2};
@@ -234,7 +241,7 @@ cfg.fft(3).twin = [3000 3998]; cfg.fft(3).fft_npoints = 512;
 %     {'subscorrect', 0}, {'subscorrect', 1};
 %     {'recognition', 'hit'}, {'recognition', 'miss'};
 %     };
-% 
+%
 % %%
-% 
+%
 
