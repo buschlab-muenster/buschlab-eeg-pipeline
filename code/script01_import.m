@@ -19,7 +19,17 @@ eeglab nogui
 suffix_in  = '';
 suffix_out = 'import';
 do_overwrite = true;
+
 % ------------------------------------------------------------------------
+% ------------------------------------------------------------------------
+% Set variables for data quality check and prepare matrices
+check_quality_plot = 1;
+rec_length = [];
+nevent = numel(cfg.epoch.trig_target); %number of trigger types
+events(:,1) = cfg.epoch.trig_target; %here we will store the number of occuraces for each trigger
+disp(['Will check data for triggers: ', num2str(cfg.epoch.trig_target)])
+% ------------------------------------------------------------------------
+
 
 subjects = get_list_of_subjects(cfg.dir, do_overwrite, suffix_in, suffix_out);
 
@@ -83,10 +93,10 @@ for isub = 6:length(subjects)
     EEG.data(lastchan+3,:) = dummydat;
     EEG.nbchan = size(EEG.data,1);
 
-	EEG.chanlocs(lastchan+1).labels = 'Eyegaze-X';
-	EEG.chanlocs(lastchan+2).labels = 'Eyegaze-Y';
-	EEG.chanlocs(lastchan+3).labels = 'Pupil-Dilation';
-    
+    EEG.chanlocs(lastchan+1).labels = 'Eyegaze-X';
+    EEG.chanlocs(lastchan+2).labels = 'Eyegaze-Y';
+    EEG.chanlocs(lastchan+3).labels = 'Pupil-Dilation';
+
     EEG = eeg_checkset(EEG, 'chanlocsize', 'chanlocs_homogeneous');
 
 
@@ -100,6 +110,39 @@ for isub = 6:length(subjects)
 
     EEG = func_saveset(EEG, subjects(isub));
 
+    % --------------------------------------------------------------
+    % Create variables that will be used to inspect data quality.
+    % --------------------------------------------------------------
+
+    % Length of recoding in minutes for each subject
+    rec_length(isub)=size(EEG.data,2)/EEG.srate/60;
+
+    %count occurances of the events
+    for k = 1:nevent
+        events(k,isub+1) = sum([EEG.event.type]==cfg.epoch.trig_target(k));
+    end
+
+end
+
+%% Create a report %%
+% --------------------------------------------------------------
+
+% If the qualitycheck folder  doesn't exist, we create it 
+
+if ~exist(cfg.dir.qualitycheck, 'dir')
+    mkdir(cfg.dir.qualitycheck)
+end
+
+fileID = fopen([cfg.dir.qualitycheck, 'project_report.txt'],'a+'); 
+fprintf(fileID,'\n %s%s \n %s%s \n %s%d \n %s%d%s%s ',datestr(datetime),'report from script01_import ', 'Data directory: ',cfg.dir.main,...
+    'New reference: ', cfg.prep.do_rereference,', ', cfg.prep.reref_chan);
+fclose(fileID);
+
+% ------------------------------------------------------------------------
+% Makes data quality plots based on the collected info on the sample
+% ------------------------------------------------------------------------
+if check_quality_plot
+    get_quality_check(rec_length, events, cfg) % if the folder data -> quality doesn't exist, the code creates it
 end
 
 done();

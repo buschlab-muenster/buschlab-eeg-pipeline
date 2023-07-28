@@ -39,6 +39,7 @@ cfg.dir.eye      = fullfile(cfg.dir.main, 'data', 'eye/');
 cfg.dir.eeg      = fullfile(cfg.dir.main, 'data', 'eeg/');
 cfg.dir.tf       = fullfile(cfg.dir.main, 'data', 'tf/');
 cfg.dir.grand    = fullfile(cfg.dir.main, 'data', 'grand/');
+cfg.dir.qualitycheck = fullfile(cfg.dir.main, 'data', 'quality/');
 
 % Where is the EEGLAB toolbox located?
 cfg.dir.eeglab   = fullfile(cfg.dir.main, 'tools/eeglab/');
