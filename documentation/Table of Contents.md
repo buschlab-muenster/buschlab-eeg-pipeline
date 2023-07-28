@@ -1,0 +1,4 @@
+- [[Before you start recording]]
+- [[Setting up your EEG analysis]]
+- [[Design principles]]
+- 

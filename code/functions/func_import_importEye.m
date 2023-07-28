@@ -57,9 +57,12 @@ function [EEG] = elektro_importEye(EEG, subject_name, dirs, eyetrack)
 
 
 % Add path to eyeeeg toolbox.
-eeglabdir = fileparts(which('eeglab'));
-eye_eeg_dir = dir([eeglabdir, '/plugins/EYE-EEG*']);
-addpath(genpath([eye_eeg_dir.folder, filesep, eye_eeg_dir.name, filesep]));
+% eeglabdir = fileparts(which('eeglab'));
+% eye_eeg_dir = dir([eeglabdir, '/plugins/EYE-EEG*']);
+% addpath(genpath([eye_eeg_dir.folder, filesep, eye_eeg_dir.name, filesep]));
+
+d = dir('../../tools/eeglab*/plugins/**/eegplugin_eye_eeg.m');
+addpath(genpath(d.folder))
 
 
 cfg.dir = dirs;
@@ -169,5 +172,7 @@ end
 %----------------------------------------------
 set(0,'DefaultFigureVisible','on')
 
-end
 
+
+rmpath(genpath(d.folder))
+done("importing eye tracking data")
