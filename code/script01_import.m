@@ -134,8 +134,8 @@ if ~exist(cfg.dir.qualitycheck, 'dir')
 end
 
 fileID = fopen([cfg.dir.qualitycheck, 'project_report.txt'],'a+'); 
-fprintf(fileID,'\n %s%s \n %s%s \n %s%d \n %s%d%s%s ',datestr(datetime),'report from script01_import ', 'Data directory: ',cfg.dir.main,...
-    'New reference: ', cfg.prep.do_rereference,', ', cfg.prep.reref_chan);
+fprintf(fileID,'\n %s ',datestr(datetime),'report from script01_import ', 'Data directory: ',cfg.dir.main,...
+    'New reference: ', string(cfg.prep.do_rereference),', ', cfg.prep.reref_chan);
 fclose(fileID);
 
 % ------------------------------------------------------------------------
