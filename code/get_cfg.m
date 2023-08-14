@@ -26,6 +26,9 @@ elseif strcmp(username,'nbus')
             rootdir = 'C:\Users\nbusch\OneDrive\Desktop\';
     end
     cfg.dir.main     = fullfile(rootdir, '/Niko/buschlab-pipeline-dev/');
+elseif strcmp(username, 'p_smit01')
+    rootdir = '/data3/';
+    cfg.dir.main = fullfile(rootdir, 'AlphaIcon/');
 end
 
 % Subfolder with raw data.
