@@ -61,8 +61,8 @@ function [EEG] = elektro_importEye(EEG, subject_name, dirs, eyetrack)
 % eye_eeg_dir = dir([eeglabdir, '/plugins/EYE-EEG*']);
 % addpath(genpath([eye_eeg_dir.folder, filesep, eye_eeg_dir.name, filesep]));
 
-d = dir('../../tools/eeglab*/plugins/**/eegplugin_eye_eeg.m');
-addpath(genpath(d.folder))
+%d = dir('../../tools/eeglab*/plugins/**/eegplugin_eye_eeg.m');
+addpath([dirs.eeglab,'plugins\eye-eeg\'])
 
 
 cfg.dir = dirs;

@@ -30,10 +30,7 @@ events(:,1) = cfg.epoch.trig_target; %here we will store the number of occuraces
 disp(['Will check data for triggers: ', num2str(cfg.epoch.trig_target)])
 % ------------------------------------------------------------------------
 
-
 subjects = get_list_of_subjects(cfg.dir, do_overwrite, suffix_in, suffix_out);
-
-
 
 %% Run across subjects.
 nthreads = min([cfg.system.max_threads, length(subjects)]);
@@ -54,7 +51,7 @@ for isub = 1:length(subjects)
     EEG.chanlocs(66).labels = 'AFp9';
     EEG.chanlocs(67).labels = 'AFp10';
 
-    EEG = func_import_selectchans(EEG, cfg.chans);% problem with channel locations in Alphaicon
+    EEG = func_import_selectchans(EEG, cfg.chans);
 
     % Use this line to verify the accuracy of channel labels and locations.
     % figure; topoplot([],EEG.chanlocs,'style','blank','electrodes','labelpoint','chaninfo',EEG.chaninfo);
@@ -67,20 +64,15 @@ for isub = 1:length(subjects)
     % --------------------------------------------------------------
     EEG = func_import_reref(EEG, joinstructs(cfg.prep, cfg.chans));
 
-
     % --------------------------------------------------------------
     % Compute VEOG and HEOG.
     % --------------------------------------------------------------
     EEG = func_import_eyechans(EEG, cfg.chans);
 
-
-
     %---------------------------------------------------------------
     % Remove all events from non-configured trigger devices
     %---------------------------------------------------------------
     EEG = func_import_remove_triggers(EEG, cfg.epoch);
-
-
 
     % --------------------------------------------------------------
     % Import Eyetracking data.

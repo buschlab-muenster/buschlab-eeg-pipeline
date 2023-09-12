@@ -12,9 +12,16 @@ username = char(java.lang.System.getProperty('user.name'));
 
 % Top level directories of this project.
 if strcmp(username,'ecesnait')
-    rootdir = '/data4/';
-    cfg.dir.main     = fullfile(rootdir, 'BuschlabPipeline/AlphaIcon/');% will change if I use more machines in future
-    cfg.system.max_threads = 10;
+
+    switch(strip(cfg.system.computername))
+        case 'LABSERVER1'
+            rootdir = '/data4/';
+            cfg.dir.main     = fullfile(rootdir, 'BuschlabPipeline/AlphaIcon/');% will change if I use more machines in future
+        case 'busch01'
+            cfg.dir.main     = 'C:\Users\ecesnait\Desktop\BUSCHLAB\Buschlab pipeline\';;
+    end
+            cfg.system.max_threads = 10;
+
 elseif strcmp(username,'nbus')
 
     switch(strip(cfg.system.computername))
@@ -46,7 +53,7 @@ cfg.dir.grand    = fullfile(cfg.dir.main, 'data', 'grand/');
 cfg.dir.qualitycheck = fullfile(cfg.dir.main, 'data', 'quality/');
 
 % Where is the EEGLAB toolbox located?
-cfg.dir.eeglab   = fullfile(cfg.dir.main, 'tools/eeglab2021.0/'); % EEGLAB in buschlab pipeline for git share
+cfg.dir.eeglab   = fullfile(cfg.dir.main, 'buschlab-eeg-pipeline/tools/eeglab2023.1/'); % EEGLAB in buschlab pipeline for git share
 
 addpath('./functions')
 addpath('./files')
