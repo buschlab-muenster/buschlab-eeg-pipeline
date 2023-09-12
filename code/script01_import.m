@@ -1,7 +1,7 @@
 % script01_import
 % This script imports the EEG data from the Biosemi .bdf files and stores
 % them in EEGLAB format. We also remove empty EEG channels and import the
-% channel coordinates. We also import the Eyelink .edf files and
+% channel coordinates and re-reference data. We also import the Eyelink .edf files and
 % integrates the eyetracking data with the EEG data. Beyond that, this
 % script does not apply any signal processing or manipulation of the data
 % yet.
@@ -38,13 +38,12 @@ subjects = get_list_of_subjects(cfg.dir, do_overwrite, suffix_in, suffix_out);
 %% Run across subjects.
 nthreads = min([cfg.system.max_threads, length(subjects)]);
 % parfor(isub = 1:length(subjects), nthreads) % set nthreads to 0 for normal for loop.
-for isub = 6:length(subjects)
+for isub = 1:length(subjects)
 
     % --------------------------------------------------------------
     % Import Biosemi raw data.
     % --------------------------------------------------------------
     EEG = func_import_readbdf(cfg.dir, subjects(isub).name);
-
 
 
     % --------------------------------------------------------------
@@ -55,11 +54,18 @@ for isub = 6:length(subjects)
     EEG.chanlocs(66).labels = 'AFp9';
     EEG.chanlocs(67).labels = 'AFp10';
 
-    EEG = func_import_selectchans(EEG, cfg.chans);
+    EEG = func_import_selectchans(EEG, cfg.chans);% problem with channel locations in Alphaicon
 
     % Use this line to verify the accuracy of channel labels and locations.
     % figure; topoplot([],EEG.chanlocs,'style','blank','electrodes','labelpoint','chaninfo',EEG.chaninfo);
 
+    % --------------------------------------------------------------
+    % Biosemi is recorded reference-free. We apply rereferencing in
+    % software. For preprocessing, I recommend using a single reference
+    % channel and NOT average reference. A channel near CMS/DRL usually
+    % works fine.
+    % --------------------------------------------------------------
+    EEG = func_import_reref(EEG, joinstructs(cfg.prep, cfg.chans));
 
 
     % --------------------------------------------------------------
@@ -79,7 +85,7 @@ for isub = 6:length(subjects)
     % --------------------------------------------------------------
     % Import Eyetracking data.
     % --------------------------------------------------------------
-    EEG = func_import_importEye(EEG, subjects(isub).namestr, cfg.dir, cfg.eyetrack);
+    EEG = func_import_importEye(EEG, subjects(isub).namestr, cfg.dir, cfg.eyetrack); %function breaks matlab by looking for eegplugin_eye_eeg.m
 
     % Hack for AlphaICon: the first subjects were recorded with incomplete
     % triggers in the eyetracking files. As a result, the import_eyelink
@@ -134,8 +140,9 @@ if ~exist(cfg.dir.qualitycheck, 'dir')
 end
 
 fileID = fopen([cfg.dir.qualitycheck, 'project_report.txt'],'a+'); 
-fprintf(fileID,'\n %s ',datestr(datetime),'report from script01_import ', 'Data directory: ',cfg.dir.main,...
-    'New reference: ', string(cfg.prep.do_rereference),', ', cfg.prep.reref_chan);
+fprintf(fileID,'\n %s',datestr(datetime),'report from script01_import ', ['Data directory: ',cfg.dir.main],...
+    ['Processed subjects: ', strjoin({subjects.name}, ', ')], ['New reference (yes/no): ', num2str(cfg.prep.do_rereference)],...
+    ['Reference channel: ', EEG.chanlocs(cfg.prep.reref_chan).labels]);
 fclose(fileID);
 
 % ------------------------------------------------------------------------

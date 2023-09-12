@@ -24,22 +24,12 @@ subjects = get_list_of_subjects(cfg.dir, do_overwrite, suffix_in, suffix_out);
 %% Run across subjects.
 nthreads = min([cfg.system.max_threads, length(subjects)]);
 % parfor(isub = 1:length(subjects), nthreads) % set nthreads to 0 for normal for loop.
-    for isub = 1:length(subjects)
+for isub = 1:length(subjects)
 
     % ----------------------------------------------------------
     % Load the dataset.
     % ----------------------------------------------------------
     EEG = pop_loadset('filename', subjects(isub).name, 'filepath', subjects(isub).folder);
-
-
-
-    % --------------------------------------------------------------
-    % Biosemi is recorded reference-free. We apply rereferencing in
-    % software. For preprocessing, I recommend using a single reference
-    % channel and NOT average reference. A channel near CMS/DRL usually
-    % works fine.
-    % --------------------------------------------------------------
-    EEG = func_import_reref(EEG, joinstructs(cfg.prep, cfg.chans));
 
 
 
@@ -51,7 +41,7 @@ nthreads = min([cfg.system.max_threads, length(subjects)]);
     % distorted by the filter. We keep a copy here and then put it back
     % after filtering.
     tmp = EEG.data;
-    nofilt_chans = max(cfg.chans.EEGchans)+1:EEG.nbchan;
+    nofilt_chans = max(cfg.chans.EEGchans)+1:EEG.nbchan;%indx of channels that should not be filtered
     EEG = func_import_filter(EEG, cfg.prep);
     EEG.data(nofilt_chans,:) = tmp(nofilt_chans,:);
     EEG.data(nofilt_chans,:) = tmp(nofilt_chans,:);
@@ -79,7 +69,7 @@ nthreads = min([cfg.system.max_threads, length(subjects)]);
     % Import behavioral data.
     % --------------------------------------------------------------
     EEG = func_import_behavior(EEG, subjects(isub).namestr, cfg.dir, cfg.epoch);
-    
+
 
 
     % --------------------------------------------------------------
@@ -93,7 +83,7 @@ nthreads = min([cfg.system.max_threads, length(subjects)]);
         if iscell(EEG.event(i).target_cue_w)
             EEG.event(i).target_cue_w = string(EEG.event(i).target_cue_w);
         end
-        
+
         if iscell(EEG.event(i).saccade_cue_w)
             EEG.event(i).saccade_cue_w = string(EEG.event(i).saccade_cue_w);
         end

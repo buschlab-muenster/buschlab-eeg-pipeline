@@ -13,7 +13,8 @@ username = char(java.lang.System.getProperty('user.name'));
 % Top level directories of this project.
 if strcmp(username,'ecesnait')
     rootdir = '/data4/';
-    cfg.dir.main     = fullfile(rootdir, '/BuschlabPipeline/Elena_dev_n_code/git/buschlab-eeg-pipeline/');% will change if I use more machines in future
+    cfg.dir.main     = fullfile(rootdir, 'BuschlabPipeline/AlphaIcon/');% will change if I use more machines in future
+    cfg.system.max_threads = 10;
 elseif strcmp(username,'nbus')
 
     switch(strip(cfg.system.computername))
@@ -45,7 +46,7 @@ cfg.dir.grand    = fullfile(cfg.dir.main, 'data', 'grand/');
 cfg.dir.qualitycheck = fullfile(cfg.dir.main, 'data', 'quality/');
 
 % Where is the EEGLAB toolbox located?
-cfg.dir.eeglab   = fullfile(cfg.dir.main, 'tools/eeglab/');
+cfg.dir.eeglab   = fullfile(cfg.dir.main, 'tools/eeglab2021.0/'); % EEGLAB in buschlab pipeline for git share
 
 addpath('./functions')
 addpath('./files')
@@ -93,7 +94,7 @@ cfg.eyetrack.eye_keepfiles = [1 1];% CFG.eye_keepfiles      = [0 0];
 cfg.prep.do_resampling = 1;
 cfg.prep.new_sampling_rate = 256;
 cfg.prep.do_rereference = 1;
-cfg.prep.reref_chan = 32; % 48=channel CZ. 31=Pz. []=average ref.
+cfg.prep.reref_chan = 32; % used in script 01, first re-referencing; 48=channel CZ. 31=Pz. []=average ref
 
 cfg.prep.do_hp_filter = true;% CFG.do_hp_filter = 1;
 cfg.prep.hp_filter_type = 'butter';% CFG.hp_filter_type = 'eegfiltnew'; % or 'butterworth', 'eegfiltnew' or kaiser - not recommended

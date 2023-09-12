@@ -10,7 +10,7 @@ function EEG = func_import_readbdf(dirs, bdf_name)
 % toolbox so that they import the correct triggers. The lines below find
 % the folder of the fileio plugin and copies our modified versions to that
 % folder.
-d = dir('../../tools/eeglab*/plugins/fileio*/');
+d = dir('../../tools/eeglab*/plugins/fileio*/');%dir('../tools/eeglab*/plugins/Fileio*/')%
 copyfile('./functions/ft_read_event.m', d(1).folder, 'f')
 copyfile('./functions/pop_fileio.m',    d(1).folder, 'f')
 
