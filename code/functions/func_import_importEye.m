@@ -86,17 +86,18 @@ existing_files = {existing_files.name};
 % Assure that the EDF2ASC API is installed
 %----------------------------------------------
 edf2ascLoc = ''; %On OSX edf2asc is not on the path...
+%addpath 'C:\Program Files (x86)\SR Research\EyeLink\bin\'
 [status,~] = system('edf2asc');
 if (isunix && status ~= 255) || (ispc && status ~= -1)
     error('edf2asc command not found.\n Consider installing the SR-Research developers-kit.\n')
 elseif ismac && status ~=255
     %the eyelink dev kit doesn't add edf2asc to the path by default. So
     %check if it's at the default installation location
-    [status,~] = system('/Applications/Eyelink/EDF_Access_API/Example/edf2asc');
+    [status,~] = system('/usr/local/bin/edf2asc'); %Elena changed from: system('/Applications/Eyelink/EDF_Access_API/Example/edf2asc');
     if status ~=255
         error('edf2asc command not found.\n Consider installing the SR-Research developers-kit.\n');
     else
-        edf2ascLoc = '/Applications/Eyelink/EDF_Access_API/Example/';
+        edf2ascLoc = '/usr/local/bin/';%Elena: changed from '/Applications/Eyelink/EDF_Access_API/Example/';
     end
 end
 
@@ -109,8 +110,8 @@ fprintf('Now converting eyetracking file "%s" to ASCII...\n',curEDF);
 if sum(ismember(existing_files,strcat(subject_name,'.asc')))==0
     % the -y parameter assures that the file is being overwritten each time.
     try
-        [status,~] = eval(['system(''',edf2ascLoc,'edf2asc -y -input -p ',...
-            cfg.dir.eye,' ',curEDF,''')']);
+         [status,~] = eval(['system(''','','"',edf2ascLoc,'edf2asc" -y -input -p ',...
+            '"', cfg.dir.eye,'"',' ','"',curEDF,'"',''')']); %ELENA: updated with " marks in case paths have gaps
         if status~=255
             error('this looks like the weird trailing slash error!')
         end
@@ -174,5 +175,5 @@ set(0,'DefaultFigureVisible','on')
 
 
 
-rmpath(genpath(d.folder))
+rmpath(genpath([dirs.eeglab,'plugins\eye-eeg\']))
 done("importing eye tracking data")
