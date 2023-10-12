@@ -1,4 +1,4 @@
-function get_quality_check(rec_length, events, cfg)
+function get_quality_check(subjects, rec_length, events, cfg)
 % the function creates plots for the number of events found for each subject and the
 % recording length. It saves these plots to a separate folder coded at cfg.dir.qualitycheck
 

@@ -97,8 +97,6 @@ for isub = 1:length(subjects)
 
     EEG = eeg_checkset(EEG, 'chanlocsize', 'chanlocs_homogeneous');
 
-
-
     % --------------------------------------------------------------
     % Save the new EEG file in EEGLAB format.
     % --------------------------------------------------------------
@@ -141,7 +139,7 @@ fclose(fileID);
 % Makes data quality plots based on the collected info on the sample
 % ------------------------------------------------------------------------
 if check_quality_plot
-    get_quality_check(rec_length, events, cfg) % if the folder data -> quality doesn't exist, the code creates it
+    get_quality_check(subjects, rec_length, events, cfg) % if the folder data -> quality doesn't exist, the code creates it
 end
 
 done();
