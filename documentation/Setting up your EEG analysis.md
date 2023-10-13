@@ -26,6 +26,9 @@
 - For integrating eytracking and EEG data: https://www.eyetracking-eeg.org/index.php
 - `git clone --depth 1 -b v0.99 https://github.com/olafdimigen/eye-eeg.git`
 
+### Viewprops
+- For the manual ICA inspection/rejection. https://github.com/sccn/viewprops
+
 
 ### ERPLAB
 - `git clone --depth 1 -b 9.20  https://github.com/ucdavis/erplab.git`
