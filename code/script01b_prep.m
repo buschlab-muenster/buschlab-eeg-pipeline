@@ -32,7 +32,6 @@ for isub = 1:length(subjects)
     EEG = pop_loadset('filename', subjects(isub).name, 'filepath', subjects(isub).folder);
 
 
-
     % --------------------------------------------------------------
     % Filter the data.
     % --------------------------------------------------------------

@@ -1,8 +1,8 @@
 % script01_import
 % This script imports the EEG data from the Biosemi .bdf files and stores
-% them in EEGLAB format. We also remove empty EEG channels and import the
-% channel coordinates and re-reference data. We also import the Eyelink .edf files and
-% integrates the eyetracking data with the EEG data. Beyond that, this
+% them in EEGLAB format. We also remove empty EEG channels, import the
+% channel coordinates, re-reference data, import the Eyelink .edf files and
+% integrate the eyetracking data with the EEG data. Beyond that, this
 % script does not apply any signal processing or manipulation of the data
 % yet.
 
