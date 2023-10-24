@@ -24,7 +24,19 @@ parfor(isub = 1:length(subjects), nthreads)
     % Load the dataset and initialize the list of bad ICs.
     % --------------------------------------------------------------
     EEG = pop_loadset('filename', subjects(isub).name, 'filepath', subjects(isub).folder);    
-     
+    
+      % -------------------------------------------------------------
+    % Epoch data.
+    % --------------------------------------------------------------
+    EEG = func_import_epoch(EEG, cfg.epoch, cfg.eyetrack.coregister_Eyelink);
+
+
+    % --------------------------------------------------------------
+    % Import behavioral data.
+    % --------------------------------------------------------------
+    EEG = func_import_behavior(EEG, subjects(isub).namestr, cfg.dir, cfg.epoch);
+
+
     EEG = pop_rmbase(EEG, [], [], cfg.chans.EEGchans);
     EEG = eeg_detrend(EEG);   
 

@@ -1,6 +1,6 @@
 % script01b_prep
 % This script loads data in the EEGLAB format, filters it (except VEOG/HEOG
-% channels),
+% channels), downsamples, 
 
 %% Set preferences, configuration and load list of subjects.
 clear; clc; close all
@@ -49,30 +49,12 @@ for isub = 1:length(subjects)
     EEG.data(nofilt_chans,:) = tmp(nofilt_chans,:);
 
 
-
     % --------------------------------------------------------------
     % Downsample data if required. IMPORTANT: use resampling only after
     % importing the eye tracking data, or else the ET data will not be in
     % sync with EEG data.
     % --------------------------------------------------------------
     EEG = func_import_downsample(EEG, cfg.prep);
-
-
-
-    % -------------------------------------------------------------
-    % Epoch data.
-    % --------------------------------------------------------------
-    EEG = func_import_epoch(EEG, cfg.epoch, cfg.eyetrack.coregister_Eyelink);
-
-
-
-
-    % --------------------------------------------------------------
-    % Import behavioral data.
-    % --------------------------------------------------------------
-    EEG = func_import_behavior(EEG, subjects(isub).namestr, cfg.dir, cfg.epoch);
-
-
 
     % --------------------------------------------------------------
     % Detect eye movements.
@@ -92,8 +74,6 @@ for isub = 1:length(subjects)
     end
 
     EEG = func_detect_eyemovements(EEG, cfg);
-
-
 
     % --------------------------------------------------------------
     % Save the new EEG file in EEGLAB format.

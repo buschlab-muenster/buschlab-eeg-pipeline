@@ -77,7 +77,7 @@ for isub = 1:length(subjects)
     % --------------------------------------------------------------
     % Import Eyetracking data.
     % --------------------------------------------------------------
-    EEG = func_import_importEye(EEG, subjects(isub).namestr, cfg.dir, cfg.eyetrack); %function breaks matlab by looking for eegplugin_eye_eeg.m
+    EEG = func_import_importEye(EEG, subjects(isub).namestr, cfg.dir, cfg.eyetrack); 
 
     % Hack for AlphaICon: the first subjects were recorded with incomplete
     % triggers in the eyetracking files. As a result, the import_eyelink
