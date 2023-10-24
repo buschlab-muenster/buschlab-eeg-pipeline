@@ -10,7 +10,7 @@
 clear; clc; close all
 restoredefaultpath
 cfg = get_cfg;
-eeglab nogui
+eeglab 
 
 
 % ------------------------------------------------------------------------
