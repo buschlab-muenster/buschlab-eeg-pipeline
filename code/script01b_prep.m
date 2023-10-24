@@ -41,7 +41,7 @@ for isub = 1:length(subjects)
     % after filtering.
     tmp = EEG.data;
     nofilt_chans = max(cfg.chans.EEGchans)+1:EEG.nbchan;%indx of channels that should not be filtered
-    EEG = func_import_filter(EEG, cfg.prep);
+    EEG = func_import_filter(EEG, cfg.prep, cfg.dir);
     EEG.data(nofilt_chans,:) = tmp(nofilt_chans,:);
     EEG.data(nofilt_chans,:) = tmp(nofilt_chans,:);
 

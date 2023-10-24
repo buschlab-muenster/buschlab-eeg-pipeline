@@ -1,4 +1,4 @@
-function [EEG] = func_import_filter(EEG, cfg)
+function [EEG] = func_import_filter(EEG, cfg, dirs)
 %
 % wm: THIS FUNCTION STILL NEEDS A PROPER DOCUMENTATION!
 
@@ -27,8 +27,11 @@ function [EEG] = func_import_filter(EEG, cfg)
 % addpath(genpath([erplabdir.folder, filesep, erplabdir.name, filesep]));
 
 %d = dir('../../tools/eeglab2023.0/plugins/**/pop_basicfilter.m');
-d = dir('/./tools/eeglab*/plugins/erplab/eegplugin_erplab.m')
-addpath(genpath(d.folder))
+
+% d = dir('/./tools/eeglab*/plugins/erplab/eegplugin_erplab.m')
+% addpath(genpath(d.folder))
+addpath([dirs.eeglab,'plugins\erplab\'])
+addpath([dirs.eeglab,'plugins\erplab\functions\'])
 
 
 disp('Filtering continuous data');
