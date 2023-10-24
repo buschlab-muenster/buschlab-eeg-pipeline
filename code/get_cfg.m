@@ -16,7 +16,7 @@ if strcmp(username,'ecesnait')
     switch(strip(cfg.system.computername))
         case 'LABSERVER1'
             rootdir = '/data4/';
-            cfg.dir.main     = fullfile(rootdir, 'BuschlabPipeline/AlphaIcon/');% will change if I use more machines in future
+            cfg.dir.main     = fullfile(rootdir, 'BuschlabPipeline/Elena_dev_n_code/git/');% will change if I use more machines in future
         case 'busch01'
             cfg.dir.main     = 'C:\Users\ecesnait\Desktop\BUSCHLAB\Buschlab pipeline\';;
     end
@@ -53,7 +53,7 @@ cfg.dir.grand    = fullfile(cfg.dir.main, 'data', 'grand/');
 cfg.dir.qualitycheck = fullfile(cfg.dir.main, 'data', 'quality/');
 
 % Where is the EEGLAB toolbox located?
-cfg.dir.eeglab   = fullfile(cfg.dir.main, 'buschlab-eeg-pipeline/tools/eeglab2023.1/'); % EEGLAB in buschlab pipeline for git share
+cfg.dir.eeglab   = fullfile(cfg.dir.main, 'buschlab-eeg-pipeline/tools/eeglab2023.1'); % EEGLAB in buschlab pipeline for git share
 
 addpath('./functions')
 addpath('./files')
