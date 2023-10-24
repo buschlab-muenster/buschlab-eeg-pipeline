@@ -1,6 +1,5 @@
 % script01b_prep
-% This script loads data in the EEGLAB format, filters it (except VEOG/HEOG
-% channels),
+% NEEDS DOCUMENTATI
 
 %% Set preferences, configuration and load list of subjects.
 clear; clc; close all
@@ -34,6 +33,7 @@ for isub = 1:length(subjects)
     % Load the dataset.
     % ----------------------------------------------------------
     EEG = pop_loadset('filename', subjects(isub).name, 'filepath', subjects(isub).folder);
+
 
     % --------------------------------------------------------------
     % Filter the data.

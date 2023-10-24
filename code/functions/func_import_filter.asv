@@ -30,8 +30,8 @@ function [EEG] = func_import_filter(EEG, cfg, dirs)
 
 % d = dir('/./tools/eeglab*/plugins/erplab/eegplugin_erplab.m')
 % addpath(genpath(d.folder))
-addpath([dirs.eeglab,'plugins\erplab\'])
-addpath([dirs.eeglab,'plugins\erplab\functions\'])
+addpath(strrep([dirs.eeglab,'\plugins\erplab\'],'\', '/'))
+addpath(strrep([dirs.eeglab,'plugins\erplab\functions\'],'\', '/'))
 
 
 disp('Filtering continuous data');

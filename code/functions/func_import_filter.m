@@ -30,8 +30,8 @@ function [EEG] = func_import_filter(EEG, cfg, dirs)
 
 % d = dir('/./tools/eeglab*/plugins/erplab/eegplugin_erplab.m')
 % addpath(genpath(d.folder))
-addpath([dirs.eeglab,'plugins\erplab\'])
-addpath([dirs.eeglab,'plugins\erplab\functions\'])
+addpath(strrep([dirs.eeglab,'\plugins\erplab\pop_functions\'],'\', '/')) % match the direction of all slashes (works for Ubuntu and Windows, need to test on a Mac)
+addpath(strrep([dirs.eeglab,'\plugins\erplab\functions\'],'\', '/'))
 
 
 disp('Filtering continuous data');
@@ -75,5 +75,5 @@ if cfg.do_notch_filter
 
 end
 
-rmpath(genpath(d.folder))
+%rmpath(genpath(d.folder))
 done("filtering")
