@@ -1,11 +1,12 @@
 % script01b_prep
 % This script loads data in the EEGLAB format, filters it (except VEOG/HEOG
-% channels), downsamples, 
+% channels), downsamples,
 
 %% Set preferences, configuration and load list of subjects.
 clear; clc; close all
 restoredefaultpath
 cfg = get_cfg;
+detectEyeMovements = 0
 
 %addpath('./functions/')
 % dir_toolboxes = '/data3/alphaicon/tools/';
@@ -63,17 +64,19 @@ for isub = 1:length(subjects)
     % Saccade cue and memory cue are coded as cells, which throws an error when
     % EYE-EEG tries to update the event structure. Converting the cells to
     % simple strings.
-    for i = 1:length(EEG.event)
-        if iscell(EEG.event(i).target_cue_w)
-            EEG.event(i).target_cue_w = string(EEG.event(i).target_cue_w);
+    if detectEyeMovements
+        for i = 1:length(EEG.event)
+            if iscell(EEG.event(i).target_cue_w)
+                EEG.event(i).target_cue_w = string(EEG.event(i).target_cue_w);
+            end
+
+            if iscell(EEG.event(i).saccade_cue_w)
+                EEG.event(i).saccade_cue_w = string(EEG.event(i).saccade_cue_w);
+            end
         end
 
-        if iscell(EEG.event(i).saccade_cue_w)
-            EEG.event(i).saccade_cue_w = string(EEG.event(i).saccade_cue_w);
-        end
+        EEG = func_detect_eyemovements(EEG, cfg);
     end
-
-    EEG = func_detect_eyemovements(EEG, cfg);
 
     % --------------------------------------------------------------
     % Save the new EEG file in EEGLAB format.
