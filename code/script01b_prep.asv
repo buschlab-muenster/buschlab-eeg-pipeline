@@ -60,10 +60,8 @@ for isub = 1:length(subjects)
 
     % ----------------------------------------------------------
     % Artifact rejection.
-    % Inputs: Signal,MaxBadChannels,PowerTolerances,WindowLength,WindowOverlap,MaxDropoutFraction,Min
-    % 
     % ----------------------------------------------------------
-    
+
     EEG_bad = clean_windows_ElenaAdjusted(EEG,0.8)
 
 

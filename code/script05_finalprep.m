@@ -24,6 +24,27 @@ parfor(isub = 1:length(subjects), nthreads)
     % Load the dataset and initialize the list of bad ICs.
     % --------------------------------------------------------------
     EEG = pop_loadset('filename', subjects(isub).name, 'filepath', subjects(isub).folder);    
+
+    % --------------------------------------------------------------
+    % Detect eye movements.
+    % --------------------------------------------------------------
+
+    % Saccade cue and memory cue are coded as cells, which throws an error when
+    % EYE-EEG tries to update the event structure. Converting the cells to
+    % simple strings.
+    if detectEyeMovements
+        for i = 1:length(EEG.event)
+            if iscell(EEG.event(i).target_cue_w)
+                EEG.event(i).target_cue_w = string(EEG.event(i).target_cue_w);
+            end
+
+            if iscell(EEG.event(i).saccade_cue_w)
+                EEG.event(i).saccade_cue_w = string(EEG.event(i).saccade_cue_w);
+            end
+        end
+
+        EEG = func_detect_eyemovements(EEG, cfg);
+    end
     
       % -------------------------------------------------------------
     % Epoch data.
