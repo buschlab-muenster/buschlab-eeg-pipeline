@@ -50,4 +50,4 @@ Photo by <a href="https://unsplash.com/@izzyjiang?utm_source=unsplash&utm_medium
 - [ ] EEGLAB management is still a mess. Some of our scripts require only a few functions, others require several folders/plugins, ther eis always the problem with name duplicates from the fieldtrip-lite functions, and EEGLAB complains when the EEGLAB folder is added with all paths. `script04_cleanica.m` even requires that EEGLAB is initialized with all global variables like `ALLEEG`, `CURRENTSET`etc.  Can we clean this up?
 
 ## Pipeline Meeting
-- this is a test (ALB)
+- Every Thursday at 14:00
