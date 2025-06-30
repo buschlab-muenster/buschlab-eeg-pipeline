@@ -7,7 +7,7 @@
 clear; clc; close all
 restoredefaultpath
 cfg = get_cfg;
-detectEyeMovements = 0
+detectEyeMovements = 0; % TALK:  What is this?
 
 %addpath('./functions/')
 % dir_toolboxes = '/data3/alphaicon/tools/';
@@ -16,6 +16,9 @@ detectEyeMovements = 0
 % eeglab_path = [dir_toolboxes, 'eeglab' filesep];
 % addpath(eeglab_path)
 eeglab nogui
+
+%TALK:  Why there is data?
+
 
 % ------------------------------------------------------------------------
 % **Important**: these variables determine which data files are used as
@@ -28,7 +31,7 @@ do_overwrite = true;
 subjects = get_list_of_subjects(cfg.dir, do_overwrite, suffix_in, suffix_out);
 
 %% Run across subjects.
-nthreads = min([cfg.system.max_threads, length(subjects)]);
+%nthreads = min([cfg.system.max_threads, length(subjects)]);
 % parfor(isub = 1:length(subjects), nthreads) % set nthreads to 0 for normal for loop.
 for isub = 1%:length(subjects)
 
@@ -47,7 +50,7 @@ for isub = 1%:length(subjects)
     tmp = EEG.data;
     nofilt_chans = max(cfg.chans.EEGchans)+1:EEG.nbchan;%indx of channels that should not be filtered
     EEG = func_import_filter(EEG, cfg.prep, cfg.dir);
-    EEG.data(nofilt_chans,:) = tmp(nofilt_chans,:);E
+    EEG.data(nofilt_chans,:) = tmp(nofilt_chans,:);
     EEG.data(nofilt_chans,:) = tmp(nofilt_chans,:);
 
 
@@ -58,22 +61,39 @@ for isub = 1%:length(subjects)
     % --------------------------------------------------------------
     EEG = func_import_downsample(EEG, cfg.prep);
 
-    EEG = pop_select(EEG, 'nochannel', badChans);
+    
+    % ----------------------------------------------------------
+    % Channel rejection
+    % --------------------------------------------------------------
 
-
-    [EEG, flat_ch, lof_ch, periodo_ch, LOF_vec, thresh_lof_update] = NEAR_getBadChannels(EEG, 1, 5, 1, 2.5, 'seuclidean', 10, 0,[], [], [], [], 0);
-    badChans = sort(unique(union(flat_ch, lof_ch)));
 
 
     % ----------------------------------------------------------
     % Artifact rejection.
     % Inputs: Signal,MaxBadChannels,PowerTolerances,WindowLength,WindowOverlap,MaxDropoutFraction,Min
-    % 
-    % ----------------------------------------------------------
-    
-    EEG_bad = clean_windows_ElenaAdjusted(EEG,0.8)
+    % ----------------------------------------------------------    
+        
+        if strcmpi(cfg.prep.bad_segment_reject, 'auto')
 
-    EEG_bad2 = clean_windows_ElenaAdjusted(EEG,0.8)
+            % Find bad segments, do not reject?
+            [EEG, EEG_bad] = clean_windows_ElenaAdjusted(EEG, 0.8);
+        
+        elseif strcmpi(cfg.prep.bad_segment_reject, 'manual')
+           
+            % Plot for manual rejection, and reject
+            pop_eegplot(EEG, 1, 1, 1); 
+            EEG_bad = TMPREJ; 
+    
+        else
+
+            error('cfg.prep.bad_segment_reject must be ''auto'' or ''manual''.');
+
+        end
+
+     % Questions
+     % Only save the bad segments? or directly reject
+     % Turn it into a function
+
     % --------------------------------------------------------------
     % Save the new EEG file in EEGLAB format.
     % --------------------------------------------------------------
