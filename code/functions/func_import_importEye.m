@@ -63,6 +63,8 @@ function [EEG] = elektro_importEye(EEG, subject_name, dirs, eyetrack)
 
 %d = dir('../../tools/eeglab*/plugins/**/eegplugin_eye_eeg.m');
 %addpath([dirs.eeglab,'plugins\eye-eeg\'])
+%addpath([dirs.eeglab,'plugins\eye-eeg\internal\'])
+
 addpath([dirs.eeglab,'plugins\eye-eeg\internal\'])
 
 cfg.dir = dirs;
@@ -87,7 +89,11 @@ existing_files = {existing_files.name};
 %----------------------------------------------
 edf2ascLoc = ''; %On OSX edf2asc is not on the path...
 %addpath 'C:\Program Files (x86)\SR Research\EyeLink\bin\'
-[status,~] = system('edf2asc');
+
+%[status,~] = system('edf2asc');
+
+[status,~] = system('/usr/local/bin/edf2asc'); % Ekin addition 
+
 if (isunix && status ~= 255) || (ispc && status ~= -1)
     error('edf2asc command not found.\n Consider installing the SR-Research developers-kit.\n')
 elseif ismac && status ~=255

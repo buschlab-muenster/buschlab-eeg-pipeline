@@ -18,7 +18,7 @@ if strcmp(username,'ecesnait')
             rootdir = '/data2/';
             cfg.dir.main     = fullfile(rootdir, 'BuschlabPipeline/new_pipe/');% will change if I use more machines in future
         case 'busch01'
-            cfg.dir.main     = 'C:\Users\ecesnait\Desktop\BUSCHLAB\Buschlab pipeline\';;
+            cfg.dir.main     = 'C:\Users\ecesnait\Desktop\BUSCHLAB\Buschlab pipeline\';
     end
             cfg.system.max_threads = 10;
 
@@ -37,6 +37,13 @@ elseif strcmp(username,'nbus')
 elseif strcmp(username, 'p_smit01')
     rootdir = '/data3/';
     cfg.dir.main = fullfile(rootdir, 'AlphaIcon/');
+
+elseif strcmp(username, 'ekindogailkel')
+    rootdir = '/Users/ekindogailkel/';
+    cfg.dir.main = fullfile(rootdir, 'eilkel_pipe/');
+
+
+
 end
 
 % Subfolder with raw data.
@@ -53,7 +60,7 @@ cfg.dir.grand    = fullfile(cfg.dir.main, 'data', 'grand/');
 cfg.dir.qualitycheck = fullfile(cfg.dir.main, 'data', 'quality/');
 
 % Where is the EEGLAB toolbox located?
-cfg.dir.eeglab   = fullfile(cfg.dir.main, 'buschlab-eeg-pipeline/tools/eeglab2023.1'); % EEGLAB in buschlab pipeline for git share
+cfg.dir.eeglab   = fullfile(cfg.dir.main, 'new_pipe/tools/eeglab2023.1/'); % EEGLAB in buschlab pipeline for git share
 
 addpath('./functions')
 addpath('./files')

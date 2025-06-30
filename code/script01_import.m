@@ -29,19 +29,17 @@ nevent = numel(cfg.epoch.trig_target); %number of trigger types
 events(:,1) = cfg.epoch.trig_target; %here we will store the number of occuraces for each trigger
 disp(['Will check data for triggers: ', num2str(cfg.epoch.trig_target)])
 % ------------------------------------------------------------------------
-
 subjects = get_list_of_subjects(cfg.dir, do_overwrite, suffix_in, suffix_out);
 
 %% Run across subjects.
-nthreads = min([cfg.system.max_threads, length(subjects)]);
+%nthreads = min([cfg.system.max_threads, length(subjects)]);
 % parfor(isub = 1:length(subjects), nthreads) % set nthreads to 0 for normal for loop.
-for isub = 1:length(subjects)
+for isub = 1%:length(subjects)
 
     % --------------------------------------------------------------
     % Import Biosemi raw data.
     % --------------------------------------------------------------
     EEG = func_import_readbdf(cfg.dir, subjects(isub).name);
-
 
     % --------------------------------------------------------------
     % Select data channels.

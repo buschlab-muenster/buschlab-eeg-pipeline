@@ -132,11 +132,12 @@ retain_data_intervals = reshape(find(diff([false sample_mask false])),2,[])';
 retain_data_intervals(:,2) = retain_data_intervals(:,2)-1;
 
 % mark selection
-(removed_samples(:,end) - removed_samples(:,1))./256 % all 1 second long
-i = 1
-while removed_samples(2,1) - removed_samples(1,2)/signal.srate<1.5
+%(removed_samples(:,end) - removed_samples(:,1))./256; % all 1 second long
+%i = 1
+
+%while removed_samples(2,1) - removed_samples(1,2)/signal.srate<1.5
     
-end
+%end
 
 for ii = 1:size(removed_samples,1)
         n = length(signal.event);

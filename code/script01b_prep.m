@@ -30,7 +30,7 @@ subjects = get_list_of_subjects(cfg.dir, do_overwrite, suffix_in, suffix_out);
 %% Run across subjects.
 nthreads = min([cfg.system.max_threads, length(subjects)]);
 % parfor(isub = 1:length(subjects), nthreads) % set nthreads to 0 for normal for loop.
-for isub = 1:length(subjects)
+for isub = 1%:length(subjects)
 
     % ----------------------------------------------------------
     % Load the dataset.
@@ -47,7 +47,7 @@ for isub = 1:length(subjects)
     tmp = EEG.data;
     nofilt_chans = max(cfg.chans.EEGchans)+1:EEG.nbchan;%indx of channels that should not be filtered
     EEG = func_import_filter(EEG, cfg.prep, cfg.dir);
-    EEG.data(nofilt_chans,:) = tmp(nofilt_chans,:);
+    EEG.data(nofilt_chans,:) = tmp(nofilt_chans,:);E
     EEG.data(nofilt_chans,:) = tmp(nofilt_chans,:);
 
 
@@ -58,6 +58,13 @@ for isub = 1:length(subjects)
     % --------------------------------------------------------------
     EEG = func_import_downsample(EEG, cfg.prep);
 
+    EEG = pop_select(EEG, 'nochannel', badChans);
+
+
+    [EEG, flat_ch, lof_ch, periodo_ch, LOF_vec, thresh_lof_update] = NEAR_getBadChannels(EEG, 1, 5, 1, 2.5, 'seuclidean', 10, 0,[], [], [], [], 0);
+    badChans = sort(unique(union(flat_ch, lof_ch)));
+
+
     % ----------------------------------------------------------
     % Artifact rejection.
     % Inputs: Signal,MaxBadChannels,PowerTolerances,WindowLength,WindowOverlap,MaxDropoutFraction,Min
@@ -66,14 +73,14 @@ for isub = 1:length(subjects)
     
     EEG_bad = clean_windows_ElenaAdjusted(EEG,0.8)
 
-
+    EEG_bad2 = clean_windows_ElenaAdjusted(EEG,0.8)
     % --------------------------------------------------------------
     % Save the new EEG file in EEGLAB format.
     % --------------------------------------------------------------
     EEG = func_saveset(EEG, subjects(isub));
 
-    EEGbad = pop_editset(EEGbad, 'setname', [subjects(isub).namestr ' prep1 BAD TRIALS']);
-    pop_saveset(EEGbad, 'filename', ['bad' subjects(isub).outfile], 'filepath', subjects(isub).outdir);
+    EEG_bad = pop_editset(EEG_bad, 'setname', [subjects(isub).namestr ' prep1 BAD TRIALS']);
+    pop_saveset(EEG_bad, 'filename', ['bad' subjects(isub).outfile], 'filepath', subjects(isub).outdir);
 end
 
 disp('Done.')
