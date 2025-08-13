@@ -2,7 +2,7 @@
 clear; clc; close all
 
 restoredefaultpath
-prefs = get_prefs('eeglab_all', 1);
+%prefs = get_prefs('eeglab_all', 1);
 cfg   = get_cfg;
 
 % ------------------------------------------------------------------------
@@ -30,9 +30,8 @@ addpath(genpath([add_dir.folder, filesep, add_dir.name, filesep]));
 
 %% Run across subjects.
 nthreads = min([prefs.max_threads, length(subjects)]);
-parfor(isub = 1:length(subjects), nthreads) % set nthreads to 0 for normal for loop.
+parfor(isub = 1:length(subjects), nthreads) % set nthreads to 0 for normal for loop, parfor is parallel for loop
     % for isub = 1%:length(subjects)
-    
     
     % --------------------------------------------------------------
     % Load the dataset.
@@ -48,23 +47,7 @@ parfor(isub = 1:length(subjects), nthreads) % set nthreads to 0 for normal for l
     stream = sc.Value;        % Extract the stream from the Constant
     stream.Substream = 1; % Set stream to constant value so that each parfor iteration uses same seed.
     
-    % --------------------------------------------------------------
-    % If requested, perform ICA on strongly HP filtered data ==> more
-    % stable results. We make a backup of the original data. We'll only
-    % save the ICA weights produced with the hp-filtered data.
-    % --------------------------------------------------------------
-    if cfg.ica.do_ICA_hp_filter
-        
-        
-        
-        nonhpEEG = EEG;
-        switch(cfg.ica.hp_ICA_filter_type)
-            case('butterworth')
-                EEG  = pop_basicfilter( EEG, cfg.chans.EEGchans, ...
-                    'Cutoff',  cfg.ica.hp_ICA_filter_limit, ...
-                    'Design', 'butter', 'Filter', 'highpass', 'Order',  2 );
-        end
-    end
+
     
     % --------------------------------------------------------------
     % If requested, overweight brief saccade intervals containing spike

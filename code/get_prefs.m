@@ -1,4 +1,5 @@
 function [prefs] = getprefs(eeglab_level, load_fieldtrip)
+
 % This function adds machine-specific settings, i.e. paths to relevant
 % folders and other settings such as maximum number of cores for
 % parfor loops.

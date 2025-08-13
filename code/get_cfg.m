@@ -67,17 +67,22 @@ addpath('./files')
 addpath(cfg.dir.eeglab)
 
 
+
+
+
+
+
 %% Information about channel structure.
 
-% These channels were actually recorded.
-cfg.chans.EEGchans = 1:67;
+% These channels were actually recorded. EEG
+cfg.chans.EEGchans = 1:30;
 
 % We will add additional channels for VEOG and HEOG, which are based on
 % subtracting a set of electrodes above/below and left/right of the eyes.
-cfg.chans.VEOGchan = 68;
-cfg.chans.HEOGchan = 69;
-cfg.chans.VEOGin = {[42], [65]};
-cfg.chans.HEOGin = {[66], [67]};
+cfg.chans.VEOGchan = 33;
+cfg.chans.HEOGchan = [31, 32];
+cfg.chans.VEOGin = {[33]};
+cfg.chans.HEOGin = {[31]};
 
 % We use these files to import the channel coordinates. The "custom" file
 % is for the electrodes on the cap with Axx/Bxx labels. We use the
@@ -89,6 +94,11 @@ cfg.chans.chanlocs_standard = 'standard-10-5-cap385.elp'; %This is EEGLAB's stan
 
 
 %% Eyelink related input
+
+% Do you have eytracking data
+
+cfg.eyetrack.exist = 0; % if 0 ignore steps related to processing of eyetracking data
+
 % Do you want to coregister eyelink eyetracking data?
 cfg.eyetrack.coregister_Eyelink = true;% CFG.coregister_Eyelink = 1; %0=don't coregister
 
@@ -124,7 +134,7 @@ cfg.prep.lp_filter_tbandwidth = 5;% CFG.lp_filter_tbandwidth = 5;
 cfg.prep.do_notch_filter = false;
 
 % Do you want to automatically or manually reject bad data segments?
-cfg.prep.bad_segment_reject = 'auto'; % 'auto' or 'manual' 
+cfg.prep.bad_segment_reject = 'manual'; % 'auto' or 'manual' 
 
 
 %% Triggers and epochs
