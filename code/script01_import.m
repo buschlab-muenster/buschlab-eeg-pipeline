@@ -35,7 +35,7 @@ subjects = get_list_of_subjects(cfg.dir, do_overwrite, suffix_in, suffix_out);
 %% Run across subjects.
 %nthreads = min([cfg.system.max_threads, length(subjects)]);
 % parfor(isub = 1:length(subjects), nthreads) % set nthreads to 0 for normal for loop.
-for isub = 1:length(subjects)
+for isub = 1%:length(subjects)
 
     % --------------------------------------------------------------
     % Import Biosemi raw data.
@@ -69,12 +69,12 @@ for isub = 1:length(subjects)
 
     if cfg.eyetrack.exist == 1
 
-        disp('Eye-tracking data processing enabled')
+        disp('Eye-tracking data processing enabled.')
 
         EEG = func_import_importEye(EEG, subjects(isub).namestr, cfg.dir, cfg.eyetrack); 
 
     else
-         disp('Eye-tracking data processing disabled')
+         disp('Eye-tracking data processing disabled.')
     
     end 
 

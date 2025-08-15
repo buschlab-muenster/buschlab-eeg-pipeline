@@ -1,5 +1,6 @@
 %% Set preferences, configuration and load list of subjects.
 clear; clc; close all
+eeglab nogui
 
 restoredefaultpath
 %prefs = get_prefs('eeglab_all', 1);
@@ -7,8 +8,8 @@ cfg   = get_cfg;
 
 % ------------------------------------------------------------------------
 % **Important**: these variables determine which data files are used as
-% input and output. 
-suffix_in  = 'prep1';
+% input and output.
+suffix_in  = 'ica_ready';
 suffix_out = 'ica';
 do_overwrite = false;
 % ------------------------------------------------------------------------
@@ -19,66 +20,57 @@ subjects = get_list_of_subjects(cfg.dir, do_overwrite, suffix_in, suffix_out);
 % Set the random seed of the random number generator. Doing it this way is
 % recommended instead of "rng" for parfor loops.
 % ------------------------------------------------------------------------
-sc = parallel.pool.Constant(RandStream('Threefry'));
-
-% ------------------------------------------------------------------------
-% Add path to ERPLAB plugin for Butterworth filter.
-% ------------------------------------------------------------------------
-eeglabdir = fileparts(which('eeglab'));
-add_dir = dir([eeglabdir, '/plugins/ERPLAB*']);
-addpath(genpath([add_dir.folder, filesep, add_dir.name, filesep]));
+%sc = parallel.pool.Constant(RandStream('Threefry'));
 
 %% Run across subjects.
-nthreads = min([prefs.max_threads, length(subjects)]);
-parfor(isub = 1:length(subjects), nthreads) % set nthreads to 0 for normal for loop, parfor is parallel for loop
-    % for isub = 1%:length(subjects)
-    
+%nthreads = min([prefs.max_threads, length(subjects)]);
+%parfor(isub = 1:length(subjects), nthreads) % set nthreads to 0 for normal for loop, parfor is parallel for loop
+for isub = 1:length(subjects)
+
     % --------------------------------------------------------------
     % Load the dataset.
     % --------------------------------------------------------------
     EEG = pop_loadset('filename', subjects(isub).name, 'filepath', subjects(isub).folder);
     EEG.data = double(EEG.data);
-    
+
     % --------------------------------------------------------------
     % Set the rng to a fixed value so that everybody always gets the
     % same results. The exact value does not matter, 3 is a lucky
     % number.
     % --------------------------------------------------------------
-    stream = sc.Value;        % Extract the stream from the Constant
-    stream.Substream = 1; % Set stream to constant value so that each parfor iteration uses same seed.
-    
+    %stream = sc.Value;        % Extract the stream from the Constant
+    %stream.Substream = 1; % Set stream to constant value so that each parfor iteration uses same seed.
 
-    
     % --------------------------------------------------------------
     % If requested, overweight brief saccade intervals containing spike
     % potentials (see Dimigen's OPTICAT)
-    % --------------------------------------------------------------    
-    if cfg.ica.ica_overweight_sp
-        % Mark Eyetracking based occular artifacts
-        % try to guess what saccades are called in our dataset
-        types = unique({EEG.event.type});
-        sacdx = cellfun(@(x) endsWith(x, 'saccade') ||...
-            startsWith(x, 'saccade'), types);
-        if sum(sacdx) ~= 1
-            error(['Could not determine unique saccade',...
-                ' identifier event. Consider renaming in EEG.event.type']);
-        end
-        EEG = pop_overweightevents(EEG, types{sacdx},...
-            [cfg.ica.opticat_saccade_before, cfg.ica.opticat_saccade_after],...
-            cfg.ica.opticat_ow_proportion, cfg.ica.opticat_rm_epochmean);
-        % pop_overweightevents has an issue with the recent version of
-        % eeglab's pop_rmbase - edit overweightevents.m to use
-        % sac = pop_rmbase(sac,[], []);
-        % instead of sac = pop_rmbase(sac,[]);
-        
-        % retin information on rank reduction
-        EEG.etc = nonhpEEG.etc;
-    end
-    
+    % --------------------------------------------------------------
+    % if cfg.ica.ica_overweight_sp
+    %     % Mark Eyetracking based occular artifacts
+    %     % try to guess what saccades are called in our dataset
+    %     types = unique({EEG.event.type});
+    %     sacdx = cellfun(@(x) endsWith(x, 'saccade') ||...
+    %         startsWith(x, 'saccade'), types);
+    %     if sum(sacdx) ~= 1
+    %         error(['Could not determine unique saccade',...
+    %             ' identifier event. Consider renaming in EEG.event.type']);
+    %     end
+    %     EEG = pop_overweightevents(EEG, types{sacdx},...
+    %         [cfg.ica.opticat_saccade_before, cfg.ica.opticat_saccade_after],...
+    %         cfg.ica.opticat_ow_proportion, cfg.ica.opticat_rm_epochmean);
+    %     % pop_overweightevents has an issue with the recent version of
+    %     % eeglab's pop_rmbase - edit overweightevents.m to use
+    %     % sac = pop_rmbase(sac,[], []);
+    %     % instead of sac = pop_rmbase(sac,[]);
+    % 
+    %     % retin information on rank reduction
+    %     EEG.etc = nonhpEEG.etc;
+    % end
+
     % --------------------------------------------------------------
     % Run ICA.
     % --------------------------------------------------------------
-    
+
     % ICA gets confused if channels have large offsets. One way to get rid
     % of those is a strong HP filter. But if we don't use a HP filter, we
     % should do a simple BSL correction instead.
@@ -95,7 +87,9 @@ parfor(isub = 1:length(subjects), nthreads) % set nthreads to 0 for normal for l
             'extended', 1, ...
             'chanind', cfg.ica.ica_chans, 'pca', cfg.ica.ica_ncomps);
     end
-    
+
+
+
     % --------------------------------------------------------------
     % If ICA was run on HP filtered data, copy weights + sphere to
     % original, unfiltered data.
@@ -107,13 +101,13 @@ parfor(isub = 1:length(subjects), nthreads) % set nthreads to 0 for normal for l
         EEG = nonhpEEG;
         EEG = eeg_checkset(EEG); %let EEGLAB re-compute EEG.icaact & EEG.icawinv
     end
-    
+
     % --------------------------------------------------------------
     % Save data.
     % --------------------------------------------------------------
     EEG = eegh(com, EEG);
     EEG.data = single(EEG.data);
-    
+
     EEG = func_saveset(EEG, subjects(isub));
 
 end

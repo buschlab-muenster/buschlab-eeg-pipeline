@@ -1,4 +1,4 @@
-% script01b_prep
+% script02_simple_prep
 
 % This script loads data in the EEGLAB format, filters it (except VEOG/HEOG
 % channels), and downsamples.
@@ -34,7 +34,6 @@ for isub = 2:length(subjects)
     % ----------------------------------------------------------
     EEG = pop_loadset('filename', subjects(isub).name, 'filepath', subjects(isub).folder);
 
-
     % --------------------------------------------------------------
     % Filter the data.
     % --------------------------------------------------------------
@@ -59,7 +58,6 @@ for isub = 2:length(subjects)
     % --------------------------------------------------------------
     EEG = func_import_downsample(EEG, cfg.prep);
 
- 
     % --------------------------------------------------------------
     % Save the new EEG file in EEGLAB format.
     % --------------------------------------------------------------

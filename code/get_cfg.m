@@ -67,22 +67,14 @@ addpath('./files')
 addpath(cfg.dir.eeglab)
 
 
-
-
-
-
-
 %% Information about channel structure.
 
-% These channels were actually recorded. EEG
 cfg.chans.EEGchans = 1:30;
-
-% We will add additional channels for VEOG and HEOG, which are based on
-% subtracting a set of electrodes above/below and left/right of the eyes.
-cfg.chans.VEOGchan = 33;
-cfg.chans.HEOGchan = [31, 32];
-cfg.chans.VEOGin = {[33]};
-cfg.chans.HEOGin = {[31]};
+% cfg.chans.data_chans = cfg.EEGchans; % redundant, but some electrpipe functions expect a field with this name.
+cfg.chans.VEOGchan = 70;
+cfg.chans.HEOGchan = 71;
+cfg.chans.VEOGin = {[42], [65]};
+cfg.chans.HEOGin = {[ 2], [51]};
 
 % We use these files to import the channel coordinates. The "custom" file
 % is for the electrodes on the cap with Axx/Bxx labels. We use the
@@ -117,7 +109,7 @@ cfg.eyetrack.eye_keepfiles = [1 1];% CFG.eye_keepfiles      = [0 0];
 %% Preprocessing raw data.
 cfg.prep.do_resampling = 1;
 cfg.prep.new_sampling_rate = 256;
-cfg.prep.do_rereference = 1;
+cfg.prep.do_rereference = 22;
 cfg.prep.reref_chan = 32; % used in script 01, first re-referencing; 48=channel CZ. 31=Pz. []=average ref
 
 cfg.prep.do_hp_filter = true;% CFG.do_hp_filter = 1;
