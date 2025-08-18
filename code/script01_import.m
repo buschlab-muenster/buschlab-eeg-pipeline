@@ -92,7 +92,7 @@ for isub = 1%:length(subjects)
     % Create variables that will be used to inspect data quality.
     % --------------------------------------------------------------
 
-    % Length of recoding in minutes for each subject
+    % Length of recording in minutes for each subject
     rec_length(isub)=size(EEG.data,2)/EEG.srate/60;
 
     %count occurances of the events
@@ -124,4 +124,4 @@ if check_quality_plot
     get_quality_check(subjects, rec_length, events, cfg) % if the folder data -> quality doesn't exist, the code creates it
 end
 
-done();
+disp('Script01: Data import is done.')

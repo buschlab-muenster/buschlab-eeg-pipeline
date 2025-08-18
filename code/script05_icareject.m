@@ -1,16 +1,19 @@
 %% Set preferences, configuration and load list of subjects.
 clear; clc; close all
-
 restoredefaultpath
-prefs = get_prefs('eeglab_all', 1);
 cfg   = get_cfg;
+eeglab nogui
+
+
+addpath(fullfile(cfg.dir.eeglab,'plugins','ICLabel'))
+
 
 % ------------------------------------------------------------------------
 % **Important**: these variables determine which data files are used as
 % input and output. 
-suffix_in  = 'ica';
-suffix_out = 'icaclean';
-do_overwrite = false;
+suffix_in  = 'ica_weighted';
+suffix_out = 'ica_clean';
+do_overwrite = true;
 % ------------------------------------------------------------------------
 
 subjects = get_list_of_subjects(cfg.dir, do_overwrite, suffix_in, suffix_out);
@@ -27,9 +30,10 @@ for i = 1:length(icareject_fields)
 end
 
 %% Run across subjects.
-nthreads = min([prefs.max_threads, length(subjects)]);
-parfor(isub = 1:length(subjects), nthreads) % Use this if you do NOT use manual confirmation
-% for isub = 1%:length(subjects) % Use this if you want to manually inspect ICs.
+%nthreads = min([prefs.max_threads, length(subjects)]);
+%parfor(isub = 1:length(subjects), nthreads) % Use this if you do NOT use manual confirmation
+
+for isub = 1%:length(subjects) % Use this if you want to manually inspect ICs.
     
     
     % --------------------------------------------------------------
@@ -40,7 +44,12 @@ parfor(isub = 1:length(subjects), nthreads) % Use this if you do NOT use manual 
     end
     
     EEG = pop_loadset('filename', subjects(isub).name, 'filepath', subjects(isub).folder);
+   
+
+    % Baseline correction? 
+   
     EEG = pop_rmbase(EEG, [], []);
+
     [bad_ics_eog, bad_ics_eyetracker, bad_ics_iclabel] = deal(zeros(length(EEG.reject.gcompreject), 1));
     
     if cfg.icareject.confirm_manual
@@ -73,7 +82,12 @@ parfor(isub = 1:length(subjects), nthreads) % Use this if you do NOT use manual 
     % --------------------------------------------------------------
     % Detect bad ICs with IC label.
     % --------------------------------------------------------------
+    
+    EEG = pop_select(EEG, 'channel', cfg.chans.EEGchans);
+
     if cfg.icareject.do_iclabel==true
+   
+        
         fprintf('Detecting ICs with IClabel.\n')
         [EEG, bad_ics_iclabel] = func_icareject_iclabel(EEG, cfg.icareject, bad_ics_eog);
     end

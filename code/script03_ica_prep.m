@@ -13,12 +13,10 @@ eeglab nogui
 addpath(fullfile(cfg.dir.eeglab,'plugins','erplab', 'pop_functions'))
 addpath(fullfile(cfg.dir.eeglab,'plugins','erplab', 'functions'))
 
-%remove bad channels → run ICA → interpolate bad channels afterwards
-
 % ------------------------------------------------------------------------
 % **Important**: these variables determine which data files are used as
 % input and output.
-suffix_in  = 'prep';
+suffix_in  = 'simple_prep';
 do_overwrite = true;
 
 %% -------------------------------------------------------------------------------------------------------------------------
@@ -26,9 +24,9 @@ channel_interpolate = 0; % TODO
 %% -------------------------------------------------------------------------------------------------------------------------
 
 if channel_interpolate
-    suffix_out = 'ICA_ready_interpolated'
+    suffix_out = 'ICA_ready_interpolated';
 else
-    suffix_out = 'ICA_ready'
+    suffix_out = 'ICA_ready';
 end
 
 % ------------------------------------------------------------------------
@@ -66,8 +64,7 @@ for isub = 1:length(subjects)
     % High Pass Filter
     %
     % If requested, perform ICA on strongly HP filtered data ==> more
-    % stable results. We make a backup of the original data. We'll only
-    % save the ICA weights produced with the hp-filtered data.
+    % stable results. 
     % ---------------------------------------------------------------
 
     if cfg.ica.do_ICA_hp_filter
@@ -89,48 +86,47 @@ for isub = 1:length(subjects)
     EEGep = eeg_regepochs(EEG, 'recurrence', epoch_length_s, 'limits', [0 epoch_length_s]);
 
     % % ----------------------------------------------------------
-    % % Channel interpolation - criteria: at epoch level ( > 2 SD, > 30% epochs)
-    % % Problem with interpolating epoched data? 
+    % Channel interpolation - criteria: at epoch level ( > 2 SD, > 30% epochs)
+    % Problem with interpolating epoched data? 
+
     % % ----------------------------------------------------------
-    % 
-    % if channel_interpolate
-    % 
-    %     disp('Channel interpolation')
-    % 
-    %     % Thresholds
-    %     thresh_sd = 2;       % e.g., 2 SD
-    %     thresh_epoch  = 0.30;    % 30% epochs
-    % 
-    % 
-    %     % z-score across channels, time points, and epochs
-    %     zdat = zscore(EEGep.data(:));
-    %     zdat = reshape(zdat, [size(EEGep.data,1), size(EEGep.data,2), size(EEGep.data,3)]);
-    % 
-    %     % SD (per channel, within each epoch)
-    %     epoch_sd = squeeze(std(zdat, 0, 2));
-    % 
-    % 
-    %     % Proportion of "bad" epochs per channel
-    %     bad_prop = mean(epoch_sd > thresh_sd, 2);
-    % 
-    %     % Bad channels to reject
-    %     badchans_z = find(bad_prop > thresh_epoch); %TODO save 
-    % 
-    %     % --------------------------------------------------------------
-    %     % Visualize bad channels - z-score measure output - %TODO save the
-    %     % output 
-    %     % --------------------------------------------------------------
-    %     [windowTimes, windowData] = visualize_random_windows(EEG, badchans_z, 5, 9, 1, 40, 'generate', [], 42);
-    %      % saveas(gcf, 'random_windows.png');
-    % 
-    %     % Interpolate
-    %     EEGep = eeg_interp(EEGep, badchans_z, 'spherical');
-    % 
-    % else 
-    % 
-    %     disp('No channel interpolation')
-    % 
-    % end
+    
+    if channel_interpolate
+
+        disp('Bad channels will be interpolated.')
+
+        % Thresholds
+        thresh_sd = 2;       % e.g., 2 SD
+        thresh_epoch  = 0.30;    % 30% epochs
+
+        % z-score across channels, time points, and epochs
+        zdat = zscore(EEGep.data(:));
+        zdat = reshape(zdat, [size(EEGep.data,1), size(EEGep.data,2), size(EEGep.data,3)]);
+
+        % SD (per channel, within each epoch)
+        epoch_sd = squeeze(std(zdat, 0, 2));
+
+        % Proportion of "bad" epochs per channel
+        bad_prop = mean(epoch_sd > thresh_sd, 2);
+
+        % Bad channels to reject
+        badchans_z = find(bad_prop > thresh_epoch); %TODO save 
+
+        % --------------------------------------------------------------
+        % Visualize bad channels - z-score measure output - %TODO save the
+        % output 
+        % --------------------------------------------------------------
+        [windowTimes, windowData] = visualize_random_windows(EEG, badchans_z, 5, 9, 1, 40, 'generate', [], 42);
+         % saveas(gcf, 'random_windows.png');
+
+        % Interpolate
+        EEGep = eeg_interp(EEGep, badchans_z, 'spherical');
+
+    else 
+
+        disp('No channel interpolation.')
+
+    end
 
 
     % ----------------------------------------------------------
@@ -148,7 +144,8 @@ for isub = 1:length(subjects)
 
 
     % --------------------------------------------------------------
-    % Visualize bad epochs % TODO - axis format, add good examples for comparison
+    % Visualize bad epochs % TODO - axis format, add good examples for
+    % comparison, add an upper limit / or suppress output
     % --------------------------------------------------------------
 
     for e = 1:length(rej_inds)
@@ -165,9 +162,9 @@ for isub = 1:length(subjects)
     end
 
     %% 
-    % Reject those bad trials from the raw data.
+    % Reject those bad epochs from the data (version - baseline not removed).
 
-    EEGbad = []; % Initialize empty in case no bad trials are found.
+    EEGbad = []; % Initialize empty in case no bad epochs are found.
 
     if ~isempty(rej_inds)
         EEGbad = pop_select(EEGep, 'trial',   rej_inds);   % Keep only bad trials
@@ -180,20 +177,18 @@ for isub = 1:length(subjects)
             'filename', ['bad_' subjects(isub).outfile], ...
             'filepath', subjects(isub).outdir);
 
-        EEGep = pop_select(EEGep, 'notrial', rej_inds);   % Remove bad trials from EEG
+        EEGep = pop_select(EEGep, 'notrial', rej_inds);   % Remove bad trials (Keep only good trials)
 
     end
 
-    EEGep.rejected_trials = rej_inds; % Store rejected trial indices
+    EEGep.rejected_epochs = rej_inds; % Add rejected epoch indices to EEG struct
 
     % ----------------------------------------------------------
-    % Change the EEG.setname and save the data to disk under a new name.
+    % Save data 
     % ----------------------------------------------------------
 
     EEGep = func_saveset(EEGep, subjects(isub));
 
-
-
 end
 
-disp('Done.')
+disp('Script03: ICA prep is done.')

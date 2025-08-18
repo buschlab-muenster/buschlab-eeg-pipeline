@@ -14,9 +14,7 @@ eeglab nogui
 % **Important**: these variables determine which data files are used as
 % input and output.
 suffix_in  = 'import';
-
-suffix_mid_out = 'filtered_downsampled';
-suffix_out = 'prep';
+suffix_out = 'simple_prep';
 do_overwrite = true;
 % ------------------------------------------------------------------------
 
@@ -44,12 +42,13 @@ for isub = 2:length(subjects)
    
     tmp = EEG.data;
     nofilt_chans = max(cfg.chans.EEGchans)+1:EEG.nbchan; %indx of channels that should not be filtered
-
+    % this list of channels include all channels except the ones specified in cfg.chans.EEGchans
+                                                  
+    % filter 
     EEG = func_import_filter(EEG, cfg.prep, cfg.dir);
-    EEG.data(nofilt_chans,:) = tmp(nofilt_chans,:);
-    EEG.data(nofilt_chans,:) = tmp(nofilt_chans,:);
 
-    clear tmp
+    % put unfiltered channels back 
+    EEG.data(nofilt_chans,:) = tmp(nofilt_chans,:);
 
     % --------------------------------------------------------------
     % Downsample data if required. IMPORTANT: use resampling only after
@@ -65,4 +64,4 @@ for isub = 2:length(subjects)
 
 end
 
-disp('Done.')
+disp('Script02: Simple prep is done.')

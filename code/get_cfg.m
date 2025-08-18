@@ -71,10 +71,10 @@ addpath(cfg.dir.eeglab)
 
 cfg.chans.EEGchans = 1:30;
 % cfg.chans.data_chans = cfg.EEGchans; % redundant, but some electrpipe functions expect a field with this name.
-cfg.chans.VEOGchan = 70;
-cfg.chans.HEOGchan = 71;
-cfg.chans.VEOGin = {[42], [65]};
-cfg.chans.HEOGin = {[ 2], [51]};
+cfg.chans.VEOGchan = 33;
+cfg.chans.HEOGchan = [31, 32];
+cfg.chans.VEOGin = {[33]};
+cfg.chans.HEOGin = {[31], [32]};
 
 % We use these files to import the channel coordinates. The "custom" file
 % is for the electrodes on the cap with Axx/Bxx labels. We use the
