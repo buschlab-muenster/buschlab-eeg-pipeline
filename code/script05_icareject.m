@@ -6,8 +6,7 @@ eeglab nogui
 
 
 addpath(fullfile(cfg.dir.eeglab,'plugins','ICLabel'))
-
-
+%%
 % ------------------------------------------------------------------------
 % **Important**: these variables determine which data files are used as
 % input and output. 
@@ -33,31 +32,23 @@ end
 %nthreads = min([prefs.max_threads, length(subjects)]);
 %parfor(isub = 1:length(subjects), nthreads) % Use this if you do NOT use manual confirmation
 
-for isub = 1%:length(subjects) % Use this if you want to manually inspect ICs.
-    
+for isub = 3%:length(subjects) 
     
     % --------------------------------------------------------------
     % Load the dataset and initialize the list of bad ICs.
     % --------------------------------------------------------------
-    if cfg.icareject.confirm_manual
-        [ALLEEG EEG CURRENTSET ALLCOM] = eeglab;
-    end
-    
     EEG = pop_loadset('filename', subjects(isub).name, 'filepath', subjects(isub).folder);
    
 
     % Baseline correction? 
    
-    EEG = pop_rmbase(EEG, [], []);
+    %EEG = pop_rmbase(EEG, [], []);
 
     [bad_ics_eog, bad_ics_eyetracker, bad_ics_iclabel] = deal(zeros(length(EEG.reject.gcompreject), 1));
-    
-    if cfg.icareject.confirm_manual
-        [ALLEEG, EEG, CURRENTSET] = eeg_store( ALLEEG, EEG, 0 );
-    end
-    
+   
+   
     % --------------------------------------------------------------
-    % Reject ICs that correlate with HEOG/VEOG..
+    % Reject ICs that correlate with HEOG/VEOG.
     % --------------------------------------------------------------
     if cfg.icareject.do_correlate_eog==true
         fprintf('Detecting ICs that correlate with EOG channels > %2.2f\n', ...
@@ -80,14 +71,15 @@ for isub = 1%:length(subjects) % Use this if you want to manually inspect ICs.
     
     
     % --------------------------------------------------------------
-    % Detect bad ICs with IC label.
+    % Detect bad ICs with IC label. %TODO more explanation here
     % --------------------------------------------------------------
     
     EEG = pop_select(EEG, 'channel', cfg.chans.EEGchans);
 
+    EEG = pop_chanedit(EEG, 'lookup', cfg.chans.chanlocs_standard);
+
     if cfg.icareject.do_iclabel==true
    
-        
         fprintf('Detecting ICs with IClabel.\n')
         [EEG, bad_ics_iclabel] = func_icareject_iclabel(EEG, cfg.icareject, bad_ics_eog);
     end
@@ -98,7 +90,9 @@ for isub = 1%:length(subjects) % Use this if you want to manually inspect ICs.
     % of bad ICs. This is important so that the manual inspection shows 
     % bad ICs flagged by any of the procedures.
     % --------------------------------------------------------------
-    flag_ics = [bad_ics_iclabel | bad_ics_eog | bad_ics_eyetracker];
+    
+    %flag_ics = [bad_ics_iclabel | bad_ics_eog | bad_ics_eyetracker];
+    flag_ics = bad_ics_iclabel;
     EEG.reject.gcompreject = flag_ics;
     
     
@@ -106,11 +100,11 @@ for isub = 1%:length(subjects) % Use this if you want to manually inspect ICs.
     % Manual inspection.
     % --------------------------------------------------------------
     if cfg.icareject.confirm_manual
-        [ALLEEG EEG CURRENTSET] = eeg_store(ALLEEG, EEG, CURRENTSET);
-        EEG = func_icareject_manualinspect(EEG);
-    end
-    
-    
+       pop_viewprops( EEG, 0, [1:length(EEG.reject.gcompreject)], {'freqrange', [2 80]}, {}, 1, 'ICLabel' )
+       % TO-DO store component information or remove directly? 
+    end      
+
+
     % --------------------------------------------------------------
     % Finally subtract all bad components.
     % --------------------------------------------------------------

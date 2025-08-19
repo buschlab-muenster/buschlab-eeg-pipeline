@@ -65,6 +65,7 @@ for isub = 1:length(subjects)
     %
     % If requested, perform ICA on strongly HP filtered data ==> more
     % stable results. 
+    % 10.1109/EMBC.2015.7319296
     % ---------------------------------------------------------------
 
     if cfg.ica.do_ICA_hp_filter
