@@ -19,7 +19,7 @@ do_overwrite = true;
 subjects = get_list_of_subjects(cfg.dir, do_overwrite, suffix_in, suffix_out);
 
 
-isub = 2%:length(subjects)
+isub = 1%:length(subjects)
 
 % ----------------------------------------------------------
 % Load the dataset.
@@ -64,12 +64,12 @@ end
 % Sanity check for later channel rejection step
 % ----------------------------------------------------------
 
-corr_threshold  = 0.80;   % correlation cutoff
-noise_threshold = 4;      % SD above median
-window_len      = 2;      % seconds
-max_broken_time = 0.30;   % fraction of recording
-num_samples     = 50;
-subset_size     = 0.25;
+corr_threshold   = 0.85;   % correlation cutoff
+noise_threshold  = 4;      % SD above median
+window_len       = 5;      % seconds
+max_broken_time  = 0.40;   % fraction of recording
+num_samples      = 50;     % RANSAC samples
+subset_size      = 0.25;   % fraction of channels used in each sample
 
 % Run clean_channels but capture output without modifying EEG
 [~, removed_channels] = clean_channels(EEG, ...
@@ -82,7 +82,7 @@ badchans_cor = find(removed_channels == 1);
 % --------------------------------------------------------------
 % Visualize bad channels
 % --------------------------------------------------------------
-[windowTimes, windowData] = visualize_random_windows(EEG, badchans_cor, 30, 9, 1, 40, 'generate', [], 42);
+%[windowTimes, windowData] = visualize_random_windows(EEG, badchans_cor, 30, 9, 1, 40, 'generate', [], 42);
 
 % --------------------------------------------------------------
 % "Epoching"
@@ -119,7 +119,7 @@ badchans_z = find(bad_prop > thresh_epoch);
 % --------------------------------------------------------------
 %[windowTimes, windowData] = visualize_random_windows(EEG, badchans_z, 30, 9, 1, 40, 'generate', [], 42);
 
-visualize_random_windows(EEG, badchans_z, 30, 9, 1, 40, 'use', windowTimes);
+%visualize_random_windows(EEG, badchans_z, 30, 9, 1, 40, 'use', windowTimes);
 
 % ----------------------------------------------------------
 % Channel rejection - Robust z.score &
@@ -150,9 +150,9 @@ badchans_rz = find(bad_prop_r > thresh_epoch);
 % --------------------------------------------------------------
 % robust z-score measure output
 % --------------------------------------------------------------
-[windowTimes, windowData] = visualize_random_windows(EEG, badchans_rz, 10, 9, 1, 40, 'generate', [], 42);
+%[windowTimes, windowData] = visualize_random_windows(EEG, badchans_rz, 10, 9, 1, 40, 'generate', [], 42);
 
-[windowTimes, windowData] = visualize_random_windows_raw(EEG, badchans_rz, 10, 9, 'generate', [], 42);
+%[windowTimes, windowData] = visualize_random_windows_raw(EEG, badchans_rz, 10, 9, 'generate', [], 42);
 
 
 % ----------------------------------------------------------

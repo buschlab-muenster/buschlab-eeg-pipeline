@@ -1,3 +1,4 @@
+% script04_runica
 %% Set preferences, configuration and load list of subjects.
 clear; clc; close all
 restoredefaultpath
@@ -7,7 +8,7 @@ eeglab nogui
 % ------------------------------------------------------------------------
 % **Important**: these variables determine which data files are used as
 % input and output.
-suffix_in  = 'ica_ready_interpolated';
+suffix_in  = 'ICA_ready_channels_interpolated';
 suffix_out = 'ica';
 do_overwrite = true;
 % ------------------------------------------------------------------------
@@ -23,7 +24,7 @@ subjects = get_list_of_subjects(cfg.dir, do_overwrite, suffix_in, suffix_out);
 %% Run across subjects.
 %nthreads = min([prefs.max_threads, length(subjects)]);
 %parfor(isub = 1:length(subjects), nthreads) % set nthreads to 0 for normal for loop, parfor is parallel for loop
-for isub = 2%:length(subjects)
+for isub = 1:length(subjects)
 
     % --------------------------------------------------------------
     % Load the dataset.
@@ -41,7 +42,7 @@ for isub = 2%:length(subjects)
 
     % --------------------------------------------------------------
     % If requested, overweight brief saccade intervals containing spike
-    % potentials (see Dimigen's OPTICAT)
+    % potentials (see Dimigen's OPTICAT) - micro saccade artifacts
     % --------------------------------------------------------------
     % if cfg.ica.ica_overweight_sp
     %     % Mark Eyetracking based occular artifacts
@@ -65,12 +66,14 @@ for isub = 2%:length(subjects)
     %     EEG.etc = nonhpEEG.etc;
     % end
 
-  
-
 
     % ICA gets confused if channels have large offsets. One way to get rid
     % of those is a strong HP filter. But if we don't use a HP filter, we
     % should do a simple BSL correction instead.
+
+    if cfg.ica.do_ICA_hp_filter == false
+        EEG = pop_rmbase(EEG, [], [], cfg.chans.EEGchans);
+    end
 
      % --------------------------------------------------------------
     % Run ICA.
@@ -82,12 +85,6 @@ for isub = 2%:length(subjects)
     % the rank is reduced by the number of channels that were interpolated
     % after that step - we need PCA for dimensionality reduction down to the effective rank
 
-    % If we remove the channels instead then we don't need PCA
-
-    if cfg.ica.do_ICA_hp_filter == false
-        EEG = pop_rmbase(EEG, [], [], cfg.chans.EEGchans);
-    end
-
     if cfg.ica.ica_ncomps == 0
         [EEG, com] = pop_runica(EEG, 'icatype', 'runica', ...
             'extended', 1, ...
@@ -97,7 +94,6 @@ for isub = 2%:length(subjects)
             'extended', 1, ...
             'chanind', cfg.ica.ica_chans, 'pca', cfg.ica.ica_ncomps);
     end
-
 
 
     % --------------------------------------------------------------

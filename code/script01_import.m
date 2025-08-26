@@ -35,7 +35,7 @@ subjects = get_list_of_subjects(cfg.dir, do_overwrite, suffix_in, suffix_out);
 %% Run across subjects.
 %nthreads = min([cfg.system.max_threads, length(subjects)]);
 % parfor(isub = 1:length(subjects), nthreads) % set nthreads to 0 for normal for loop.
-for isub = 1%:length(subjects)
+for isub = 2%:length(subjects)
 
     % --------------------------------------------------------------
     % Import Biosemi raw data.
@@ -53,11 +53,6 @@ for isub = 1%:length(subjects)
     % --------------------------------------------------------------
     EEG = func_import_reref(EEG, joinstructs(cfg.prep, cfg.chans));
 
-    % --------------------------------------------------------------
-    % Compute VEOG and HEOG.
-    % --------------------------------------------------------------
-    EEG = func_import_eyechans(EEG, cfg.chans);
-
     %---------------------------------------------------------------
     % Remove all events from non-configured trigger devices
     %---------------------------------------------------------------
@@ -69,7 +64,7 @@ for isub = 1%:length(subjects)
 
     if cfg.eyetrack.exist == 1
 
-        disp('Eye-tracking data processing enabled.')
+        disp('Eye-tracking data processing enabled. Eyetracking data will be loaded.')
 
         EEG = func_import_importEye(EEG, subjects(isub).namestr, cfg.dir, cfg.eyetrack); 
 
@@ -124,4 +119,4 @@ if check_quality_plot
     get_quality_check(subjects, rec_length, events, cfg) % if the folder data -> quality doesn't exist, the code creates it
 end
 
-disp('Script01: Data import is done.')
+disp(strcat('Script01: Data import is done. The data is referenced to channel:', num2str(cfg.prep.reref_chan)))

@@ -32,33 +32,28 @@ end
 %nthreads = min([prefs.max_threads, length(subjects)]);
 %parfor(isub = 1:length(subjects), nthreads) % Use this if you do NOT use manual confirmation
 
-for isub = 3%:length(subjects) 
+for isub = 1%:length(subjects) 
     
     % --------------------------------------------------------------
     % Load the dataset and initialize the list of bad ICs.
     % --------------------------------------------------------------
     EEG = pop_loadset('filename', subjects(isub).name, 'filepath', subjects(isub).folder);
-   
-
-    % Baseline correction? 
-   
-    %EEG = pop_rmbase(EEG, [], []);
 
     [bad_ics_eog, bad_ics_eyetracker, bad_ics_iclabel] = deal(zeros(length(EEG.reject.gcompreject), 1));
-   
-   
+  
+
     % --------------------------------------------------------------
     % Reject ICs that correlate with HEOG/VEOG.
     % --------------------------------------------------------------
     if cfg.icareject.do_correlate_eog==true
         fprintf('Detecting ICs that correlate with EOG channels > %2.2f\n', ...
             cfg.icareject.thresh_correlate_eog)
-        
+
         [bad_ics_eog, ~] = func_icareject_corr_ic_eog(EEG, ...
             [cfg.chans.HEOGchan cfg.chans.VEOGchan], ...
             cfg.icareject.thresh_correlate_eog);
     end
-    
+
     % --------------------------------------------------------------
     % Reject ICs that correlate with eye tracker.
     % IMPORTANT: you can only use this if the data are not resampled,
@@ -118,8 +113,7 @@ for isub = 3%:length(subjects)
     else
         EEG = pop_subcomp(EEG, remove_ics, 0);
     end
-        
-    
+         
     % --------------------------------------------------------------
     % Save clean data.
     % --------------------------------------------------------------

@@ -1,8 +1,6 @@
-%% ------------------------------------------------------------------------
-% /\/\/\ WORK IN PROGRESS /\/\/\
-%--------------------------------------------------------------------------
+%script03_ica_prep
 
-%% Set preferences, configuration and load list of subjects.
+% Set preferences, configuration and load list of subjects.
 clear; clc; close all
 
 restoredefaultpath
@@ -20,16 +18,17 @@ suffix_in  = 'simple_prep';
 do_overwrite = true;
 
 %% -------------------------------------------------------------------------------------------------------------------------
-channel_interpolate = 0; % TODO
-%% -------------------------------------------------------------------------------------------------------------------------
+channel_rejection = 0; % TODO: 0 - do nothing with channels, 1 - remove channels, 2 - interpolate channels
 
-if channel_interpolate
-    suffix_out = 'ICA_ready_interpolated';
-else
-    suffix_out = 'ICA_ready';
+if channel_rejection == 0
+   suffix_out = 'ICA_ready';
+elseif channel_rejection == 1
+   suffix_out = 'ICA_ready_channels_rejected';
+elseif channel_rejection == 2
+   suffix_out = 'ICA_ready_channels_interpolated';
 end
 
-% ------------------------------------------------------------------------
+%% ------------------------------------------------------------------------
 
 subjects = get_list_of_subjects(cfg.dir, do_overwrite, suffix_in, suffix_out);
 
@@ -39,7 +38,7 @@ subjects = get_list_of_subjects(cfg.dir, do_overwrite, suffix_in, suffix_out);
 
 %parfor(isub = 1:length(subjects), nthreads) % set nthreads to 0 for normal for loop.
 
-for isub = 1:length(subjects)
+for isub = 4%1:length(subjects)
 
     % ----------------------------------------------------------
     % Load the dataset. This data was filtered and downsampled in
@@ -58,7 +57,7 @@ for isub = 1:length(subjects)
     % removed)
     % ----------------------------------------------------------
 
-    EEG = pop_chanedit(EEG, 'lookup', cfg.chans.chanlocs_standard);
+    % EEG = pop_chanedit(EEG, 'lookup', cfg.chans.chanlocs_standard);
 
     % --------------------------------------------------------------
     % High Pass Filter
@@ -86,14 +85,46 @@ for isub = 1:length(subjects)
 
     EEGep = eeg_regepochs(EEG, 'recurrence', epoch_length_s, 'limits', [0 epoch_length_s]);
 
+    %%
     % % ----------------------------------------------------------
     % Channel interpolation - criteria: at epoch level ( > 2 SD, > 30% epochs)
     % Problem with interpolating epoched data? 
 
     % % ----------------------------------------------------------
-    
-    if channel_interpolate
 
+    if channel_rejection == 0
+
+        disp('Bad channels will remain.')
+
+    elseif channel_rejection == 1 % TODO ADD ACTUALY REMOVAL
+
+        % Thresholds
+        thresh_sd = 2;       % e.g., 2 SD
+        thresh_epoch  = 0.30;    % 30% epochs
+
+        % z-score across channels, time points, and epochs
+        zdat = zscore(EEGep.data(:));
+        zdat = reshape(zdat, [size(EEGep.data,1), size(EEGep.data,2), size(EEGep.data,3)]);
+
+        % SD (per channel, within each epoch)
+        epoch_sd = squeeze(std(zdat, 0, 2));
+
+        % Proportion of "bad" epochs per channel
+        bad_prop = mean(epoch_sd > thresh_sd, 2);
+
+        % Bad channels to reject
+        badchans = find(bad_prop > thresh_epoch); %TODO save 
+
+        % --------------------------------------------------------------
+        % Visualize bad channels - %TODO
+        % output 
+        % --------------------------------------------------------------
+        [windowTimes, windowData] = visualize_random_windows(EEG, badchans, 5, 9, 2, 10, 'generate', [], 42);
+
+        disp('Bad channels will be removed.')
+
+    elseif channel_rejection == 2
+           
         disp('Bad channels will be interpolated.')
 
         % Thresholds
@@ -111,25 +142,14 @@ for isub = 1:length(subjects)
         bad_prop = mean(epoch_sd > thresh_sd, 2);
 
         % Bad channels to reject
-        badchans_z = find(bad_prop > thresh_epoch); %TODO save 
+        badchans = find(bad_prop > thresh_epoch); %TODO save 
 
-        % --------------------------------------------------------------
-        % Visualize bad channels - z-score measure output - %TODO save the
-        % output 
-        % --------------------------------------------------------------
-        [windowTimes, windowData] = visualize_random_windows(EEG, badchans_z, 5, 9, 1, 40, 'generate', [], 42);
-         % saveas(gcf, 'random_windows.png');
+         % Interpolate
+        EEGep = eeg_interp(EEGep, badchans, 'spherical');
 
-        % Interpolate
-        EEGep = eeg_interp(EEGep, badchans_z, 'spherical');
+    end 
 
-    else 
-
-        disp('No channel interpolation.')
-
-    end
-
-
+    %%
     % ----------------------------------------------------------
     % Bad segment rejection - criteria: Amplitude
     % ----------------------------------------------------------
@@ -140,35 +160,34 @@ for isub = 1:length(subjects)
 
     % Find epoch to reject based on extreme amplitude values.
 
-    [~, rej_inds] = pop_eegthresh(EEGep_rm, 1, cfg.chans.EEGchans, ...
+    [~, bad_by_amplitude_epochs] = pop_eegthresh(EEGep_rm, 1, cfg.chans.EEGchans, ...
         -cfg.rej.rejthresh_pre_ica, cfg.rej.rejthresh_pre_ica, EEGep.xmin, EEGep.xmax, 1, 0); % cfg.rej.rejthresh_pre_ica = 500
-
 
     % --------------------------------------------------------------
     % Visualize bad epochs % TODO - axis format, add good examples for
-    % comparison, add an upper limit / or suppress output
+    % comparison, suppress output, save
     % --------------------------------------------------------------
-
-    for e = 1:length(rej_inds)
-        %Extract data for that epoch
-        epochData = squeeze(EEGep.data(cfg.chans.EEGchans,:,rej_inds(e))); % channels x timepoints
-        timeVec = linspace(EEGep.xmin*1000, EEGep.xmax*1000, EEGep.pnts); % in ms
-
-        figure;
-        plot(timeVec, epochData');
-        xlabel('Time (ms)');
-        ylabel('Amplitude (µV)');
-        title(sprintf('Epoch %d', rej_inds(e)));
-        grid on;
-    end
+    % 
+    % for e = 1:length(bad_by_amplitude)
+    %     %Extract data for that epoch
+    %     epochData = squeeze(EEGep.data(cfg.chans.EEGchans,:,bad_by_amplitude(e))); % channels x timepoints
+    %     timeVec = linspace(EEGep.xmin*1000, EEGep.xmax*1000, EEGep.pnts); % in ms
+    % 
+    %     figure;
+    %     plot(timeVec, epochData');
+    %     xlabel('Time (ms)');
+    %     ylabel('Amplitude (µV)');
+    %     title(sprintf('Epoch %d', bad_by_amplitude(e)));
+    %     grid on;
+    % end
 
     %% 
     % Reject those bad epochs from the data (version - baseline not removed).
 
     EEGbad = []; % Initialize empty in case no bad epochs are found.
 
-    if ~isempty(rej_inds)
-        EEGbad = pop_select(EEGep, 'trial',   rej_inds);   % Keep only bad trials
+    if ~isempty(bad_by_amplitude_epochs)
+        EEGbad = pop_select(EEGep, 'trial',   bad_by_amplitude_epochs);   % Keep only bad trials
 
         % Save bad trials (IF EXISTS)
 
@@ -178,11 +197,23 @@ for isub = 1:length(subjects)
             'filename', ['bad_' subjects(isub).outfile], ...
             'filepath', subjects(isub).outdir);
 
-        EEGep = pop_select(EEGep, 'notrial', rej_inds);   % Remove bad trials (Keep only good trials)
+        EEGep = pop_select(EEGep, 'notrial', bad_by_amplitude_epochs);   % Remove bad trials (Keep only good trials)
 
     end
 
-    EEGep.rejected_epochs = rej_inds; % Add rejected epoch indices to EEG struct
+    EEGep.rejected_epochs = bad_by_amplitude_epochs; % Add rejected epoch indices to EEG struct
+
+
+    % TODO - Add manual segment rejection
+    if strcmpi(cfg.prep.bad_segment_reject, 'manual')
+        % Launch EEGPLOT with manual rejection enabled
+        pop_eegplot(EEG, 1, 1, 1);
+
+        uiwait(gcf);   % pauses execution until eegplot is closed
+
+        % Retrieve indices of manually rejected epochs
+        bad_by_eye_epochs = TMPREJ;
+    end
 
     % ----------------------------------------------------------
     % Save data 

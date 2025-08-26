@@ -20,17 +20,24 @@ do_overwrite = true;
 
 subjects = get_list_of_subjects(cfg.dir, do_overwrite, suffix_in, suffix_out);
 
+% ------------------------------------------------------------------------
+% ** NOTE FOR EXAMPLE DATA ** I used ERP core data for testing the
+% pipeline and ignored VEOG and HEOG for now. 
+% cfg.chans.EEGchans = 30
+% ------------------------------------------------------------------------
+
 
 %% Run across subjects.
 %nthreads = min([cfg.system.max_threads, length(subjects)]);
 % parfor(isub = 1:length(subjects), nthreads) % set nthreads to 0 for normal for loop.
 
-for isub = 2:length(subjects)
+for isub = 1%2:length(subjects)
 
     % ----------------------------------------------------------
     % Load the dataset.
     % ----------------------------------------------------------
     EEG = pop_loadset('filename', subjects(isub).name, 'filepath', subjects(isub).folder);
+
 
     % --------------------------------------------------------------
     % Filter the data.
