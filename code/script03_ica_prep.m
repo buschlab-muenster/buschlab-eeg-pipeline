@@ -130,7 +130,7 @@ for isub = 1%4%1:length(subjects)
         badchans = find(bad_prop > thresh_epoch); %TODO save 
 
         % -------------------------------------------------------------------------------------
-        % Visualize bad channels - %TODO - this doesn't work because of the reference channels 
+        % Visualize bad channels - %TODO - this doesn't work because of the reference channel 
         % -------------------------------------------------------------------------------------
         %EEG = pop_select(EEG, 'channel', [1:31,33:length(cfg.chans.EEGchans)]); % This shifts of course indices - bad channels are different now
 
@@ -140,6 +140,32 @@ for isub = 1%4%1:length(subjects)
            
         disp('Bad channels will be interpolated.')
 
+
+        % Thresholds
+        thresh_sd = 2;       % e.g., 2 SD
+        thresh_epoch  = 0.30;    % 30% epochs -> If more than 30% of epochs exceed the threshold
+
+        % z-score across channels, time points, and epochs
+        % each sample is standardized relative to all data
+        zdat = zscore(EEGep.data(:));
+        zdat = reshape(zdat, [size(EEGep.data,1), size(EEGep.data,2), size(EEGep.data,3)]);
+
+        % SD (For each channel × epoch, across time points)
+        % channel variability within epochs
+        epoch_sd = squeeze(std(zdat, 0, 2)); 
+
+        % Proportion of "bad" epochs per channel
+        bad_prop = mean(epoch_sd > thresh_sd, 2);
+
+        % Bad channels to reject
+        badchans = find(bad_prop > thresh_epoch); %TODO save 
+
+        % -------------------------------------------------------------------------------------
+        % Visualize bad channels - %TODO - this doesn't work because of the reference channel 
+        % -------------------------------------------------------------------------------------
+        %EEG = pop_select(EEG, 'channel', [1:31,33:length(cfg.chans.EEGchans)]); % This shifts of course indices - bad channels are different now
+
+        [windowTimes, windowData] = visualize_random_windows(EEG, badchans, 5, 9, 2, 40, 'generate', [], 42);
 
          % Interpolate
         EEGep = eeg_interp(EEGep, badchans, 'spherical');
