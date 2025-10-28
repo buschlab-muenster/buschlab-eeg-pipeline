@@ -23,11 +23,7 @@ addpath(fullfile(cfg.dir.eeglab,'plugins','erplab', 'functions'))
 % input and output.
 suffix_in  = 'simple_prep';
 do_overwrite = true;
-suffix_out = 'ICA_ready';
-
-% ------------------------------------------------------------------------
-% Question: What about the reference channel?
-
+suffix_out = 'ica_prep';
 
 
 %% ------------------------------------------------------------------------
@@ -40,7 +36,7 @@ subjects = get_list_of_subjects(cfg.dir, do_overwrite, suffix_in, suffix_out);
 
 %parfor(isub = 1:length(subjects), nthreads) % set nthreads to 0 for normal for loop.
 
-for isub = 1%4%1:length(subjects)
+for isub = 4%1:length(subjects)
 
     % ----------------------------------------------------------
     % Load the dataset. This data was filtered and downsampled in
@@ -49,49 +45,39 @@ for isub = 1%4%1:length(subjects)
     EEG = pop_loadset('filename', subjects(isub).name, 'filepath', subjects(isub).folder);
 
     % ----------------------------------------------------------
-    % Remove channels that were NOT specified in cfg.chans.EEGchans
+    % Detect Bad Channels:
+    % Ekin had to make a small change to the function so it can output flagged channels 
     % ----------------------------------------------------------
-
-    %cfg.chans.EEGchans = 1:30;
-    %EEG = pop_select(EEG, 'channel', cfg.chans.EEGchans);
-
-    % ----------------------------------------------------------
-    % Add channel layout for the example data (this step will be later
-    % removed) - DO we add layout anywhere? Do we need to?
-    % ----------------------------------------------------------
-
-    %EEG = pop_chanedit(EEG, 'lookup', cfg.chans.chanlocs_standard);
-
-    % ----------------------------------------------------------
-    % I had to make a small change to the function so it can output flagged
-    % channels - for sanity check - it detects the reference channel
-    % ----------------------------------------------------------
-
     % https://github.com/sccn/clean_rawdata/blob/master/clean_flatlines.m
 
     % max duration (by default 5s) of too little variation 
 
-    [~, removed_channels] = clean_flatlines(EEG);
+    [EEG_chan_rmv, flat_channels] = clean_flatlines(EEG);
 
-    find(removed_channels==1)
-    
-    cfg.prep.reref_chan
+    % visualise 
+    vis_artifacts(EEG_chan_rmv, EEG);
 
-    [windowTimes, windowData] = visualize_random_windows(EEG, find(removed_channels==1), 100, 9, 42);
+
+    % ask 
+
+
+    % remove
+
+    EEG = EEG_chan_rmv;
 
     % ----------------------------------------------------------
-    % Detecting bad segments
-    % ----------------------------------------------------------
+    % Detect Bad Segments
+    % ---------------------------------------------------------
 
-    [newEEG,sample_mask] = clean_windows(EEG);
 
-    % ----------------------------------------------------------
-    % Visualisation
-    % ----------------------------------------------------------
-  
-     [h_old,h_new] = vis_artifacts(newEEG,EEG);
+    % visualise 
 
-     pop_eegplot(newEEG)
+
+    % ask
+
+
+    % remove
+
 
     % --------------------------------------------------------------
     % High Pass Filter
@@ -111,12 +97,5 @@ for isub = 1%4%1:length(subjects)
     end
 
 end
-
-    % ----------------------------------------------------------
-    % Remove reference channel - which is all zeros now
-    % 
-    % ----------------------------------------------------------
-
-    EEG = pop_select(EEG, 'nochannel', cfg.prep.reref_chan);
 
 disp('Script03: ICA prep is done.')

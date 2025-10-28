@@ -32,7 +32,7 @@ end
 %nthreads = min([prefs.max_threads, length(subjects)]);
 %parfor(isub = 1:length(subjects), nthreads) % Use this if you do NOT use manual confirmation
 
-for isub = 1%:length(subjects) 
+for isub = 3%:length(subjects) 
     
     % --------------------------------------------------------------
     % Load the dataset and initialize the list of bad ICs.
@@ -70,6 +70,8 @@ for isub = 1%:length(subjects)
     % --------------------------------------------------------------
     
     EEG = pop_select(EEG, 'channel', cfg.chans.EEGchans);
+
+    EEG = pop_select(EEG, 'channel', 1:30);
 
     EEG = pop_chanedit(EEG, 'lookup', cfg.chans.chanlocs_standard);
 
@@ -113,6 +115,8 @@ for isub = 1%:length(subjects)
     else
         EEG = pop_subcomp(EEG, remove_ics, 0);
     end
+
+    % TODO add - red / black, data before vs after ICA
          
     % --------------------------------------------------------------
     % Save clean data.

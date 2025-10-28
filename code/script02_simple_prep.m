@@ -13,19 +13,12 @@ eeglab nogui
 % ------------------------------------------------------------------------
 % **Important**: these variables determine which data files are used as
 % input and output.
-suffix_in  = 'import';
-suffix_out = 'simple_prep';
+suffix_in  = 'simple_prep';
+suffix_out = 'ica_prep';
 do_overwrite = true;
 % ------------------------------------------------------------------------
 
 subjects = get_list_of_subjects(cfg.dir, do_overwrite, suffix_in, suffix_out);
-
-% ------------------------------------------------------------------------
-% ** NOTE FOR EXAMPLE DATA ** I used ERP core data for testing the
-% pipeline and ignored VEOG and HEOG for now. 
-% cfg.chans.EEGchans = 30
-% ------------------------------------------------------------------------
-
 
 %% Run across subjects.
 %nthreads = min([cfg.system.max_threads, length(subjects)]);

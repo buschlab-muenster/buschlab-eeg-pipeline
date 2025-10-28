@@ -1,4 +1,4 @@
-function signal = clean_flatlines(signal,max_flatline_duration,max_allowed_jitter)
+function [signal,removed_channels] = clean_flatlines(signal,max_flatline_duration,max_allowed_jitter)
 % Remove (near-) flat-lined channels.
 % Signal = clean_flatlines(Signal,MaxFlatlineDuration,MaxAllowedJitter)
 %
