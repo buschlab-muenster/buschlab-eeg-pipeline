@@ -12,9 +12,9 @@ addpath(fullfile(cfg.dir.eeglab,'plugins','erplab', 'pop_functions'))
 addpath(fullfile(cfg.dir.eeglab,'plugins','erplab', 'functions'))
 
 % Steps in the script:
-% 1. Optional high-pass filter
-% 2. Handle bad channels 
-% 3. Handle bad segments 
+% 1. Handle bad channels 
+% 2. Handle bad segments 
+% 3. Optional high-pass filter
 
 % Keep the data continuous 
 
@@ -36,13 +36,17 @@ subjects = get_list_of_subjects(cfg.dir, do_overwrite, suffix_in, suffix_out);
 
 %parfor(isub = 1:length(subjects), nthreads) % set nthreads to 0 for normal for loop.
 
-for isub = 4%1:length(subjects)
+for isub = 5%1:length(subjects)
 
     % ----------------------------------------------------------
     % Load the dataset. This data was filtered and downsampled in
     % script02_simple_prep.m
     % ----------------------------------------------------------
     EEG = pop_loadset('filename', subjects(isub).name, 'filepath', subjects(isub).folder);
+
+    EEG = pop_select(EEG, 'nochannel', [68:80]);
+
+    pop_eegplot(EEG)
 
     % ----------------------------------------------------------
     % Detect Bad Channels:
@@ -57,9 +61,9 @@ for isub = 4%1:length(subjects)
     % visualise 
     vis_artifacts(EEG_chan_rmv, EEG);
 
+   
 
     % ask 
-
 
     % remove
 
@@ -70,11 +74,26 @@ for isub = 4%1:length(subjects)
     % ---------------------------------------------------------
 
 
-    % visualise 
+    %% The sliding window part
+    % apply highpass of 20 for sliding window
+    EEG_temp = pop_eegfiltnew(EEG, 'locutoff',20);
+    
+    % apply sliding window
+    [~, cleaned_mask] = clean_windows(EEG_temp,0.25,[-12 12]);
 
+    % get removed time intervals from cleaned mask
+    retain_data_intervals = reshape(find(diff([false cleaned_mask false])),2,[])';
+    retain_data_intervals(:,2) = retain_data_intervals(:,2)-1;
+    
+    % apply removed intervals to EEG data
+    EEG_clean = pop_select(EEG,'point',retain_data_intervals);
+    EEG_clean.etc.clean_sample_mask = cleaned_mask;
+    
+    % visualize
+    vis_artifacts(EEG_clean, EEG);
 
     % ask
-
+  
 
     % remove
 

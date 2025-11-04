@@ -13,8 +13,8 @@ eeglab nogui
 % ------------------------------------------------------------------------
 % **Important**: these variables determine which data files are used as
 % input and output.
-suffix_in  = 'simple_prep';
-suffix_out = 'ica_prep';
+suffix_in  = 'import';
+suffix_out = 'simple_prep';
 do_overwrite = true;
 % ------------------------------------------------------------------------
 
@@ -24,7 +24,7 @@ subjects = get_list_of_subjects(cfg.dir, do_overwrite, suffix_in, suffix_out);
 %nthreads = min([cfg.system.max_threads, length(subjects)]);
 % parfor(isub = 1:length(subjects), nthreads) % set nthreads to 0 for normal for loop.
 
-for isub = 1%2:length(subjects)
+for isub = 6%2:length(subjects)
 
     % ----------------------------------------------------------
     % Load the dataset.
