@@ -35,7 +35,7 @@ subjects = get_list_of_subjects(cfg.dir, do_overwrite, suffix_in, suffix_out);
 %% Run across subjects.
 %nthreads = min([cfg.system.max_threads, length(subjects)]);
 % parfor(isub = 1:length(subjects), nthreads) % set nthreads to 0 for normal for loop.
-for isub = 2%:length(subjects)
+for isub = 3%:length(subjects)
 
     % --------------------------------------------------------------
     % Import Biosemi raw data.
@@ -43,7 +43,14 @@ for isub = 2%:length(subjects)
     EEG = func_import_readbdf(cfg.dir, subjects(isub).name);
 
     % Use this line to verify the accuracy of channel labels and locations.
-    % figure; topoplot([],EEG.chanlocs,'style','blank','electrodes','labelpoint','chaninfo',EEG.chaninfo);
+    % figure; 
+    % topoplot([],EEG.chanlocs,'style','blank','electrodes','labelpoint','chaninfo',EEG.chaninfo);
+
+    % --------------------------------------------------------------
+    % Select data channels.
+    % --------------------------------------------------------------
+
+    EEG = func_import_selectchans(EEG, cfg.chans);
 
     % --------------------------------------------------------------
     % Biosemi is recorded reference-free. We apply rereferencing in
@@ -52,6 +59,12 @@ for isub = 2%:length(subjects)
     % works fine.
     % --------------------------------------------------------------
     EEG = func_import_reref(EEG, joinstructs(cfg.prep, cfg.chans));
+
+    % --------------------------------------------------------------
+    % Compute VEOG and HEOG.
+    % --------------------------------------------------------------
+    EEG = func_import_eyechans(EEG, cfg.chans);
+
 
     %---------------------------------------------------------------
     % Remove all events from non-configured trigger devices
@@ -72,6 +85,8 @@ for isub = 2%:length(subjects)
          disp('Eye-tracking data processing disabled.')
     
     end 
+
+    EEG = eeg_checkset(EEG, 'chanlocsize', 'chanlocs_homogeneous');
 
     % --------------------------------------------------------------
     % Save the new EEG file in EEGLAB format.
