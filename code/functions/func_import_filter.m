@@ -18,7 +18,6 @@ function [EEG] = func_import_filter(EEG, cfg, dirs)
 %  along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 
-
 % We have to make sure that we add the path to the filter plugin, otherwise
 % we may get problems loading 'dipfitdefs'.
 % eeglabdir = fileparts(which('eeglab'));

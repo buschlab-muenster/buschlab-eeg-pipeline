@@ -93,7 +93,6 @@ for isub = 1%1:length(subjects1)
     vis_artifacts(EEG_clean, EEG);
 
     % ask
- 
 
     % ----------------------------------------------------------
     % Re-reference to average

@@ -16,5 +16,5 @@ if cfg.do_resampling == 1
     [pathstr, ~, ~] = fileparts(which('resample.m'));
     rmpath([pathstr '/'])
     addpath([pathstr '/'])
-    EEG = pop_resample( EEG, cfg.new_sampling_rate);
+    EEG = pop_resample(EEG, cfg.new_sampling_rate);
 end

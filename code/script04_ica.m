@@ -1,4 +1,4 @@
-% script04_runica
+% script04_ica
 %% Set preferences, configuration and load list of subjects.
 clear; clc; close all
 restoredefaultpath
@@ -73,7 +73,6 @@ for isub = 1%:length(subjects)
     % --------------------------------------------------------------
 
     if cfg.ica.do_ICA_hp_filter == true
-
         nonhpEEG = EEG;
 
         switch(cfg.ica.hp_ICA_filter_type)
@@ -85,12 +84,10 @@ for isub = 1%:length(subjects)
 
     end 
 
-
     % Do we need to transfer weights for this version as well?
 
     %if cfg.ica.do_baseline_removal
-    %     %     EEG_modified = pop_rmbase(EEG, [], [], cfg.chans.brain);
-    % 
+    %   EEG_modified = pop_rmbase(EEG, [], [], cfg.chans.brain);
     % end
 
 
@@ -122,12 +119,15 @@ for isub = 1%:length(subjects)
     end
 
     if cfg.ica.check_components == 1
-
-        pop_viewprops(EEG, 0)
-        % Without this the code doesnt 
-        input('Press Enter after reviewing components to continue...', 's');
-
+        figs_before = get(0, 'Children');
+        pop_viewprops(EEG, 0);
+        pause(0.5);
+        new_figs = setdiff(get(0, 'Children'), figs_before);
+        if ~isempty(new_figs)
+            waitfor(new_figs(1));
+        end
     end
+
     % --------------------------------------------------------------
     % Save data.
     % --------------------------------------------------------------
@@ -145,11 +145,13 @@ msg = sprintf(['\n%s\nreport from script04_ica\n' ...
     'Data directory: %s\n' ...
     'Processed subjects: %s\n' ...
     'High pass filter (yes/no): %d\n' ...
+    'High pass filter cutoff: %d\n' ...
     'Baseline removal (yes/no): %d\n'], ...
     datestr(datetime), ...
     cfg.dir.main, ...
     strjoin({subjects.name}, ', '), ...
     cfg.ica.do_ICA_hp_filter, ...
+    cfg.ica.hp_ICA_filter_limit, ...
     cfg.ica.do_baseline_removal);
 
 fileID = fopen([cfg.dir.qualitycheck, 'project_report.txt'],'a+');

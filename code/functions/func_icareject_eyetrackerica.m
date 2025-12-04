@@ -26,4 +26,15 @@ topomode = 4;
     cfg.eyetracker_ica_varthresh, ...
     flag_mode, plotfig, topomode);
 
-bad_ics = find(EEG.reject.gcompreject);
+% Return logical vector (not indices) for consistency with other functions
+bad_ics = EEG.reject.gcompreject;
+bad_ics = logical(bad_ics(:));  % Force column vector and ensure logical
+% Ensure output size matches number of ICs
+n_components = size(EEG.icaweights, 1);
+if length(bad_ics) ~= n_components
+    badics_temp = zeros(n_components, 1);
+    badics_temp(1:length(bad_ics)) = bad_ics;
+    bad_ics = logical(badics_temp);
+end
+
+fprintf('Found %d bad ICs (eyetracker correlation).\n', sum(bad_ics));

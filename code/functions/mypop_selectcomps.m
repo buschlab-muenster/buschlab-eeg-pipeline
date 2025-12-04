@@ -55,7 +55,6 @@ function [EEG, com] = mypop_selectcomps( EEG, compnum, fig );
 % 01-25-02 reformated help & license -ad 
 
 
-
 COLREJ = '[1 0.6 0.6]';
 COLACC = '[0.75 1 0.75]';
 PLOTPERFIG = 35;

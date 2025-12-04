@@ -42,7 +42,6 @@ addpath(cfg.dir.eeglab)
 
 % These channels were actually recorded.
 cfg.chans.EEGchans = 1:67; % all recorded channels 
-cfg.chans.brain = 1:64; % channels that recorded the brain activity
 
 % We will add additional channels for VEOG and HEOG, which are based on
 % subtracting a set of electrodes above/below and left/right of the eyes.
@@ -183,7 +182,7 @@ cfg.ica.opticat_rm_epochmean = true;% CFG.opticat_rm_epochmean = true; % subtrac
 %% ------------------------------------------
 % ICA rejection parameters
 % ------------------------------------------
-cfg.icareject.confirm_manual   = false;
+cfg.icareject.confirm_manual   = 1;
 cfg.icareject.do_correlate_eog = true;
 cfg.icareject.do_eyetrackerica = false;
 cfg.icareject.do_iclabel       = true; % Select components based on IClabel classifier?

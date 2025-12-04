@@ -1,11 +1,9 @@
+% script05_icareject.m
 %% Set preferences, configuration and load list of subjects.
 clear; clc; close all
 restoredefaultpath
 cfg   = get_cfg;
 eeglab nogui
-
-cfg.icareject.confirm_manual = 1;
-
 
 addpath(fullfile(cfg.dir.eeglab,'plugins','ICLabel'))
 %%
@@ -23,12 +21,12 @@ subjects = get_list_of_subjects(cfg.dir, do_overwrite, suffix_in, suffix_out);
 % Set defaults for ICA rejection fields in case they are not set in the
 % cfg. This makes processing easier in the main loop.
 % ------------------------------------------------------------------------
-icareject_fields = {'do_correlate_eog', 'do_eyetrackerica', 'do_iclabel'};
-for i = 1:length(icareject_fields)
-    if ~isfield(cfg.icareject, icareject_fields{i})
-        cfg.icareject = setfield(cfg.icareject, icareject_fields{i}, false);
-    end
-end
+% icareject_fields = {'do_correlate_eog', 'do_eyetrackerica', 'do_iclabel'};
+% for i = 1:length(icareject_fields)
+%     if ~isfield(cfg.icareject, icareject_fields{i})
+%         cfg.icareject = setfield(cfg.icareject, icareject_fields{i}, false);
+%     end
+% end
 
 %% Run across subjects.
 %nthreads = min([prefs.max_threads, length(subjects)]);
@@ -41,7 +39,8 @@ for isub = 1%:length(subjects)
     % --------------------------------------------------------------
     EEG = pop_loadset('filename', subjects(isub).name, 'filepath', subjects(isub).folder);
 
-    [bad_ics_eog, bad_ics_eyetracker, bad_ics_iclabel] = deal(zeros(length(EEG.reject.gcompreject), 1));
+    % Initialize bad IC vectors based on actual number of ICs
+    [bad_ics_eog, bad_ics_eyetracker, bad_ics_iclabel] = deal(zeros(size(EEG.icaweights, 1), 1));
   
 
     % --------------------------------------------------------------
@@ -61,6 +60,8 @@ for isub = 1%:length(subjects)
     % Reject ICs that correlate with eye tracker.
     % IMPORTANT: you can only use this if the data are not resampled,
     % see documentation of pop_eyetrackerica!
+    %
+    % We need to change the output to make it compatible with others 
     % --------------------------------------------------------------
     if cfg.icareject.do_eyetrackerica==true && cfg.prep.do_resampling==false
         fprintf('Detecting ICs that correlate with eye tracker.\n')
@@ -69,36 +70,35 @@ for isub = 1%:length(subjects)
     
     
     % --------------------------------------------------------------
-    % Detect bad ICs with IC label. %TODO more explanation here
+    % Detect bad ICs with IC label. 
     % --------------------------------------------------------------
    
-    if cfg.icareject.do_iclabel==true
+    if cfg.icareject.do_iclabel == 1
         fprintf('Detecting ICs with IClabel.\n')
         [EEG, bad_ics_iclabel] = func_icareject_iclabel(EEG, cfg.icareject, bad_ics_eog);
     end
     
     % --------------------------------------------------------------
-    % Now that all detection procedures are finished, update the list 
-    % of bad ICs. This is important so that the manual inspection shows 
+    % Now that all detection procedures are finished, update the list
+    % of bad ICs. This is important so that the manual inspection shows
     % bad ICs flagged by any of the procedures.
     % --------------------------------------------------------------
-    
-    %flag_ics = [bad_ics_iclabel | bad_ics_eog | bad_ics_eyetracker];
-    EEG.reject.gcompreject = bad_ics_iclabel;
+
+    % Combine all detection methods
+    flag_ics = bad_ics_iclabel | bad_ics_eog | bad_ics_eyetracker;
+    EEG.reject.gcompreject = flag_ics;
   
     
     % --------------------------------------------------------------
-    % Manual inspection.
+    % Manual inspection. 
     % --------------------------------------------------------------
-    if cfg.icareject.confirm_manual
-       pop_viewprops(EEG, 0, [find(EEG.reject.gcompreject==1)]', 'ICLabel' ) % inspection of flagged components
-       %pop_viewprops(EEG, 0, 1:size(EEG.icaweights,1), 'ICLabel') % see all components
-       pop_selectcomps(EEG);
-       input('Press Enter after reviewing components to continue...', 's');
-       close all
+    if cfg.icareject.confirm_manual == 1
+        pop_viewprops(EEG, 0, [find(EEG.reject.gcompreject==1)]', 'ICLabel' ) % inspection of flagged components
+        %pop_viewprops(EEG, 0, 1:size(EEG.icaweights,1), 'ICLabel') % see all components
+        pop_selectcomps(EEG);
+        input('Press Enter after reviewing components to continue...', 's');
+        close all
     end      
-    
-
 
     % This doesn't work 
     % if cfg.icareject.confirm_manual
@@ -106,18 +106,19 @@ for isub = 1%:length(subjects)
     %     EEG = func_icareject_manualinspect(EEG);
     % end
 
+   
     % --------------------------------------------------------------
-    % Finally subtract all bad components. This also doesn't work 
+    % Finally subtract all bad components. 
     % --------------------------------------------------------------
-    remove_ics = find(EEG.reject.gcompreject);
-    fprintf('Removing %d components:\n', length(remove_ics))
-    fprintf(' %g', remove_ics)
-    fprintf('.\n')
-    
-    if cfg.icareject.confirm_manual        
-         EEG_clean = pop_subcomp(EEG, [], 1);
+
+    if cfg.icareject.confirm_manual == 1
+        EEG_clean = pop_subcomp(EEG, [], 1);
     else
-         EEG_clean = pop_subcomp(EEG, remove_ics, 0);
+        remove_ics = find(EEG.reject.gcompreject);
+        fprintf('Removing %d components:\n', length(remove_ics))
+        fprintf(' %g', remove_ics)
+        fprintf('.\n')
+        EEG_clean = pop_subcomp(EEG, remove_ics, 0);
     end
     
     % --------------------------------------------------------------
@@ -126,7 +127,7 @@ for isub = 1%:length(subjects)
 
     vis_artifacts(EEG_clean, EEG);
 
-    %pop_eegplot(EEG_c lean)
+    %pop_eegplot(EEG_clean)
          
     % --------------------------------------------------------------
     % Save clean data.
@@ -136,3 +137,21 @@ for isub = 1%:length(subjects)
 end
 
 disp('Done.')
+
+% 
+% if ~exist(cfg.dir.qualitycheck, 'dir')
+%     mkdir(cfg.dir.qualitycheck)
+% end
+% 
+% msg = sprintf(['\n%s\nreport from script05_icareject\n' ...
+%     'Data directory: %s\n' ...
+%     'Processed subjects: %s\n' ...
+%     'Number of components rejected: %d\n'], ...
+%     datestr(datetime), ...
+%     cfg.dir.main, ...
+%     strjoin({subjects.name}, ', '), ...
+%     cfg.ica.do_baseline_removal);
+% 
+% fileID = fopen([cfg.dir.qualitycheck, 'project_report.txt'],'a+');
+% fprintf(fileID,'%s',msg);
+% fclose(fileID);
