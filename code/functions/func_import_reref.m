@@ -7,7 +7,7 @@ function EEG = func_import_reref(EEG, cfg)
 % --------------------------------------------------------------
 if cfg.do_rereference
     EEG = pop_reref( EEG, cfg.reref_chan, 'keepref', 'on', ...
-        'exclude',[max(cfg.EEGchans)+1:EEG.nbchan] );
+        'exclude',setdiff(1:EEG.nbchan, cfg.chans.brain));
 end
 
 done("rereferencing");

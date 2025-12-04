@@ -4,13 +4,15 @@ restoredefaultpath
 cfg   = get_cfg;
 eeglab nogui
 
+cfg.icareject.confirm_manual = 1;
+
 
 addpath(fullfile(cfg.dir.eeglab,'plugins','ICLabel'))
 %%
 % ------------------------------------------------------------------------
 % **Important**: these variables determine which data files are used as
 % input and output. 
-suffix_in  = 'ica_weighted';
+suffix_in  = 'ica';
 suffix_out = 'ica_clean';
 do_overwrite = true;
 % ------------------------------------------------------------------------
@@ -32,7 +34,7 @@ end
 %nthreads = min([prefs.max_threads, length(subjects)]);
 %parfor(isub = 1:length(subjects), nthreads) % Use this if you do NOT use manual confirmation
 
-for isub = 3%:length(subjects) 
+for isub = 1%:length(subjects) 
     
     % --------------------------------------------------------------
     % Load the dataset and initialize the list of bad ICs.
@@ -50,8 +52,9 @@ for isub = 3%:length(subjects)
             cfg.icareject.thresh_correlate_eog)
 
         [bad_ics_eog, ~] = func_icareject_corr_ic_eog(EEG, ...
-            [cfg.chans.HEOGchan cfg.chans.VEOGchan], ...
+            [cfg.chans.VEOGchan cfg.chans.HEOGchan], ...
             cfg.icareject.thresh_correlate_eog);
+
     end
 
     % --------------------------------------------------------------
@@ -68,19 +71,11 @@ for isub = 3%:length(subjects)
     % --------------------------------------------------------------
     % Detect bad ICs with IC label. %TODO more explanation here
     % --------------------------------------------------------------
-    
-    EEG = pop_select(EEG, 'channel', cfg.chans.EEGchans);
-
-    EEG = pop_select(EEG, 'channel', 1:30);
-
-    EEG = pop_chanedit(EEG, 'lookup', cfg.chans.chanlocs_standard);
-
-    if cfg.icareject.do_iclabel==true
    
+    if cfg.icareject.do_iclabel==true
         fprintf('Detecting ICs with IClabel.\n')
         [EEG, bad_ics_iclabel] = func_icareject_iclabel(EEG, cfg.icareject, bad_ics_eog);
     end
-    
     
     % --------------------------------------------------------------
     % Now that all detection procedures are finished, update the list 
@@ -89,21 +84,30 @@ for isub = 3%:length(subjects)
     % --------------------------------------------------------------
     
     %flag_ics = [bad_ics_iclabel | bad_ics_eog | bad_ics_eyetracker];
-    flag_ics = bad_ics_iclabel;
-    EEG.reject.gcompreject = flag_ics;
-    
+    EEG.reject.gcompreject = bad_ics_iclabel;
+  
     
     % --------------------------------------------------------------
     % Manual inspection.
     % --------------------------------------------------------------
     if cfg.icareject.confirm_manual
-       pop_viewprops( EEG, 0, [1:length(EEG.reject.gcompreject)], {'freqrange', [2 80]}, {}, 1, 'ICLabel' )
-       % TO-DO store component information or remove directly? 
+       pop_viewprops(EEG, 0, [find(EEG.reject.gcompreject==1)]', 'ICLabel' ) % inspection of flagged components
+       %pop_viewprops(EEG, 0, 1:size(EEG.icaweights,1), 'ICLabel') % see all components
+       pop_selectcomps(EEG);
+       input('Press Enter after reviewing components to continue...', 's');
+       close all
     end      
+    
 
+
+    % This doesn't work 
+    % if cfg.icareject.confirm_manual
+    %     [ALLEEG EEG CURRENTSET] = eeg_store(ALLEEG, EEG, CURRENTSET);
+    %     EEG = func_icareject_manualinspect(EEG);
+    % end
 
     % --------------------------------------------------------------
-    % Finally subtract all bad components.
+    % Finally subtract all bad components. This also doesn't work 
     % --------------------------------------------------------------
     remove_ics = find(EEG.reject.gcompreject);
     fprintf('Removing %d components:\n', length(remove_ics))
@@ -111,17 +115,23 @@ for isub = 3%:length(subjects)
     fprintf('.\n')
     
     if cfg.icareject.confirm_manual        
-        EEG = pop_subcomp(EEG, [], 1);
+         EEG_clean = pop_subcomp(EEG, [], 1);
     else
-        EEG = pop_subcomp(EEG, remove_ics, 0);
+         EEG_clean = pop_subcomp(EEG, remove_ics, 0);
     end
+    
+    % --------------------------------------------------------------
+    % Before vs after ICA
+    % --------------------------------------------------------------
 
-    % TODO add - red / black, data before vs after ICA
+    vis_artifacts(EEG_clean, EEG);
+
+    %pop_eegplot(EEG_c lean)
          
     % --------------------------------------------------------------
     % Save clean data.
     % --------------------------------------------------------------
-    EEG = func_saveset(EEG, subjects(isub));
+    EEG = func_saveset(EEG_clean, subjects(isub));
 
 end
 

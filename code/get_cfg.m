@@ -11,38 +11,9 @@ function cfg = get_cfg
 username = char(java.lang.System.getProperty('user.name'));
 
 % Top level directories of this project.
-if strcmp(username,'ecesnait')
-
-    switch(strip(cfg.system.computername))
-        case 'LABSERVER1'
-            rootdir = '/data2/';
-            cfg.dir.main     = fullfile(rootdir, 'BuschlabPipeline/new_pipe/');% will change if I use more machines in future
-        case 'busch01'
-            cfg.dir.main     = 'C:\Users\ecesnait\Desktop\BUSCHLAB\Buschlab pipeline\';
-    end
-            cfg.system.max_threads = 10;
-
-elseif strcmp(username,'nbus')
-
-    switch(strip(cfg.system.computername))
-        case 'LABSERVER1'
-            rootdir = '/data3/';
-            cfg.system.max_threads = 10;
-        case 'busch02'
-            rootdir = 'Y:\Niko\';
-        case 'busch-x1-2021'
-            rootdir = 'C:\Users\nbusch\OneDrive\Desktop\';
-    end
-    cfg.dir.main     = fullfile(rootdir, '/Niko/buschlab-pipeline-dev/');
-elseif strcmp(username, 'p_smit01')
-    rootdir = '/data3/';
-    cfg.dir.main = fullfile(rootdir, 'AlphaIcon/');
-
-elseif strcmp(username, 'ekindogailkel')
+if  strcmp(username, 'ekindogailkel')
     rootdir = '/Users/ekindogailkel/';
     cfg.dir.main = fullfile(rootdir, 'eilkel_pipe/');
-
-
 
 end
 
@@ -69,15 +40,9 @@ addpath(cfg.dir.eeglab)
 
 %% Information about channel structure.
 
-% cfg.chans.EEGchans = 1:30;
-% % cfg.chans.data_chans = cfg.EEGchans; % redundant, but some electrpipe functions expect a field with this name.
-% cfg.chans.VEOGchan = 33;
-% cfg.chans.HEOGchan = [31, 32];
-% cfg.chans.VEOGin = {[33]};
-% cfg.chans.HEOGin = {[31], [32]};
-
 % These channels were actually recorded.
-cfg.chans.EEGchans = 1:67;
+cfg.chans.EEGchans = 1:67; % all recorded channels 
+cfg.chans.brain = 1:64; % channels that recorded the brain activity
 
 % We will add additional channels for VEOG and HEOG, which are based on
 % subtracting a set of electrodes above/below and left/right of the eyes.
@@ -85,6 +50,7 @@ cfg.chans.VEOGchan = 68;
 cfg.chans.HEOGchan = 69;
 cfg.chans.VEOGin = {[42], [65]};
 cfg.chans.HEOGin = {[66], [67]};
+
 
 % We use these files to import the channel coordinates. The "custom" file
 % is for the electrodes on the cap with Axx/Bxx labels. We use the
@@ -119,8 +85,8 @@ cfg.eyetrack.eye_keepfiles = [1 1];% CFG.eye_keepfiles      = [0 0];
 %% Preprocessing raw data.
 cfg.prep.do_resampling = 1;
 cfg.prep.new_sampling_rate = 256;
-cfg.prep.do_rereference = 22;
-cfg.prep.reref_chan = 32; % used in script 01, first re-referencing; 48=channel CZ. 31=Pz. []=average ref
+cfg.prep.do_rereference = 1;
+cfg.prep.reref_chan = 48; % used in script 01, first re-referencing; 48=channel CZ. 31=Pz. []=average ref
 
 cfg.prep.do_hp_filter = true;% CFG.do_hp_filter = 1;
 cfg.prep.hp_filter_type = 'butter';% CFG.hp_filter_type = 'eegfiltnew'; % or 'butterworth', 'eegfiltnew' or kaiser - not recommended
@@ -141,7 +107,7 @@ cfg.prep.bad_segment_reject = 'manual'; % 'auto' or 'manual'
 
 %% Triggers and epochs
 cfg.epoch.tlims = [-1.5 1];
-cfg.epoch.trig_target = [21:29];% CFG.trig_target = []; %e.g., [21:29, 200:205]
+cfg.epoch.trig_target = [1 9 17 25 33];% CFG.trig_target = []; %e.g., [21:29, 200:205]
 cfg.epoch.trigger_device = 'lowbyte-PC';% CFG.trigger_device = 'lowbyte-PC'; % can be [],'lowbyte-PC' or 'highbyte-VPixx'
 cfg.epoch.keep_continuous = false;
 
@@ -175,6 +141,7 @@ cfg.epoch.deletebadlatency = 0;
 
 %% Trial rejection before ICA.
 % cfg.use_asr = 0;
+
 cfg.rej.rejthresh_pre_ica  = 500;
 cfg.rej.rej_jp_singchan = 9;
 cfg.rej.rej_jp_allchans = 5;
@@ -183,7 +150,7 @@ cfg.rej.rej_jp_allchans = 5;
 %% ICA parameters
 % % ------------------------------------------
 cfg.ica.ica_chans = cfg.chans.EEGchans; % Typicaly, ICA is computed on all channels, unless one channel is not really EEG.
-cfg.ica.ica_ncomps = numel(cfg.chans.EEGchans)-2;% CFG.ica_ncomps = numel(CFG.data_chans) - 3; % if ica_ncomps==0, determine data rank from the ...
+cfg.ica.ica_ncomps = 0;%numel(cfg.chans.EEGchans)-2;% CFG.ica_ncomps = numel(CFG.data_chans) - 3; % if ica_ncomps==0, determine data rank from the ...
 % data (EEGLAB default). Otherwise, use a fixed number of components. Note:
 % subject-specific settings will override this parameter.
 
@@ -197,6 +164,13 @@ cfg.ica.hp_ICA_filter_type = 'butterworth';% CFG.hp_ICA_filter_type = 'eegfiltne
 cfg.ica.hp_ICA_filter_limit = 2;% CFG.hp_ICA_filter_limit = 2.5;
 % cfg.ica.hp_ICA_filter_tbandwidth = 0.2;% CFG.hp_ICA_filter_tbandwidth = 0.2;% only used for kaiser
 % cfg.ica.hp_ICA_filter_pbripple = 0.01;% CFG.hp_ICA_filter_pbripple = 0.01;% only used for kaiser
+cfg.ica.do_baseline_removal = false;
+cfg.ica.check_components = true;
+
+
+
+
+
 %
 % % Olaf Dimigen recommends to overweight spike potentials using his OPTICAT
 % % approach. Do you want to do this prior to computung ICA?
@@ -211,7 +185,7 @@ cfg.ica.opticat_rm_epochmean = true;% CFG.opticat_rm_epochmean = true; % subtrac
 % ------------------------------------------
 cfg.icareject.confirm_manual   = false;
 cfg.icareject.do_correlate_eog = true;
-cfg.icareject.do_eyetrackerica = true;
+cfg.icareject.do_eyetrackerica = false;
 cfg.icareject.do_iclabel       = true; % Select components based on IClabel classifier?
 
 cfg.icareject.thresh_correlate_eog = 0.7;

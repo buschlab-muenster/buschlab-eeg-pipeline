@@ -24,13 +24,12 @@ subjects = get_list_of_subjects(cfg.dir, do_overwrite, suffix_in, suffix_out);
 %nthreads = min([cfg.system.max_threads, length(subjects)]);
 % parfor(isub = 1:length(subjects), nthreads) % set nthreads to 0 for normal for loop.
 
-for isub = 6%2:length(subjects)
+for isub = 1%1:length(subjects)
 
     % ----------------------------------------------------------
     % Load the dataset.
     % ----------------------------------------------------------
     EEG = pop_loadset('filename', subjects(isub).name, 'filepath', subjects(isub).folder);
-
 
     % --------------------------------------------------------------
     % Filter the data.
@@ -38,17 +37,18 @@ for isub = 6%2:length(subjects)
     % Filters should happen before epoching. Also: we want to keep the
     % VEOG/HEOG and eye tracking data unfiltered to make sure they are not
     % distorted by the filter. We keep a copy here and then put it back
-    % after filtering.
+    % after filtering. WE FILTER REST OF THE EYE CHANNELS? 
    
     tmp = EEG.data;
-    nofilt_chans = max(cfg.chans.EEGchans)+1:EEG.nbchan; %indx of channels that should not be filtered
-    % this list of channels include all channels except the ones specified in cfg.chans.EEGchans
+    nofilt_chans = [cfg.chans.VEOGchan cfg.chans.HEOGchan]; %indx of channels that should not be filtered
                                                   
     % filter 
     EEG = func_import_filter(EEG, cfg.prep, cfg.dir);
 
     % put unfiltered channels back 
     EEG.data(nofilt_chans,:) = tmp(nofilt_chans,:);
+
+    clear tmp
 
     % --------------------------------------------------------------
     % Downsample data if required. IMPORTANT: use resampling only after
@@ -63,5 +63,69 @@ for isub = 6%2:length(subjects)
     EEG = func_saveset(EEG, subjects(isub));
 
 end
+
+%% Create a report %%
+% --------------------------------------------------------------
+
+% If the qualitycheck folder  doesn't exist, we create it 
+
+if ~exist(cfg.dir.qualitycheck, 'dir')
+    mkdir(cfg.dir.qualitycheck)
+end
+
+msg = sprintf(['\n%s\n report from script02_simple_prep\n' ...
+    'Data directory: %s\n' ...
+    'Processed subjects: %s\n' ...
+    'These channels are not filtered: %s\n' ...
+    'High pass filter (yes/no): %s\n' ...
+    'High pass filter type: %s\n' ...
+    'High pass filter limit: %s\n' ...
+    'Low pass filter (yes/no): %s\n' ...
+    'Low pass filter limit: %s\n' ...
+    'Low pass filter bandwidth: %s\n' ...
+    'Notch filter (yes/no): %s\n' ...
+    'Downsample(yes/no): %s\n'], ...
+    datestr(datetime), ...
+    cfg.dir.main, ...
+    strjoin({subjects.name}, ', '), ...
+    num2str(nofilt_chans), ...
+    num2str(cfg.prep.do_hp_filter), ...
+    cfg.prep.hp_filter_type, ...
+    num2str(cfg.prep.hp_filter_limit), ...
+    num2str(cfg.prep.do_lp_filter), ...
+    num2str(cfg.prep.lp_filter_limit), ...
+    num2str(cfg.prep.lp_filter_tbandwidth), ...
+    num2str(cfg.prep.do_notch_filter), ...
+    num2str(cfg.prep.do_resampling));
+
+fileID = fopen([cfg.dir.qualitycheck, 'project_report.txt'],'a+');
+fprintf(fileID,'%s',msg);
+fclose(fileID);
+
+if cfg.prep.do_resampling == 1
+    msg2 = sprintf('Downsampled to: %s\n', ...
+        num2str(cfg.prep.new_sampling_rate));
+    fileID = fopen([cfg.dir.qualitycheck, 'project_report.txt'],'a+');
+    fprintf(fileID,'%s',msg2);
+    fclose(fileID);
+end
+
+clear msg msg2
+
+% add plots
+
+% if you want to check results of filtering
+% this plot does not include the reference channel so there is one less
+% channel. 
+
+f = figure('Visible','off');  % create figure
+
+nn(EEG.data, 0, EEG.srate, 'freqrange', [1 cfg.prep.lp_filter_limit+10], 'plot', 'on');
+%                     
+saveas(f, fullfile(cfg.dir.qualitycheck, ...
+    [subjects(isub).namestr '_spectopo_plot_after_filter.png']));
+
+%close(f);
+
 
 disp('Script02: Simple prep is done.')

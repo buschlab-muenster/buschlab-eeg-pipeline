@@ -8,7 +8,7 @@ cfg   = get_cfg;
 % ------------------------------------------------------------------------
 % **Important**: these variables determine which data files are used as
 % input and output. 
-suffix_in  = 'icaclean';
+suffix_in  = 'ica_weighted';
 suffix_out = 'final';
 do_overwrite = false;
 % ------------------------------------------------------------------------
@@ -17,7 +17,7 @@ subjects = get_list_of_subjects(cfg.dir, do_overwrite, suffix_in, suffix_out);
 
 %% Run across subjects.
 nthreads = min([1, prefs.max_threads, length(subjects)]);
-parfor(isub = 1:length(subjects), nthreads)
+parfor(isub = 4:length(subjects), nthreads)
 % for isub = 1%:length(subjects)
     
     % --------------------------------------------------------------

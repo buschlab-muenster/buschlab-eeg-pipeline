@@ -80,8 +80,8 @@ end
 % parse options
 opts = hlp_varargin2struct(varargin, ...
     {'yrange','YRange'}, [0.05 0.95], ...       % y range of the figure occupied by the signal plot
-    {'yscaling','YScaling'}, 3.5, ...           % distance of the channel time series from each other in std. deviations
-    {'wndlen','WindowLength'}, 10, ...          % window length to display
+    {'yscaling','YScaling'}, 2, ...           % distance of the channel time series from each other in std. deviations
+    {'wndlen','WindowLength'}, 30, ...          % window length to display
     {'newcol','NewColor'}, [0 0 0.5], ...       % color of the new (i.e., cleaned) data
     {'oldcol','OldColor'}, [1 0 0], ...         % color of the old (i.e., uncleaned) data
     {'highpass_old','HighpassOldData'},true, ...% whether to high-pass the old data if not already done

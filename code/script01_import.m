@@ -30,27 +30,33 @@ nevent = numel(cfg.epoch.trig_target); %number of trigger types
 events(:,1) = cfg.epoch.trig_target; %here we will store the number of occuraces for each trigger
 disp(['Will check data for triggers: ', num2str(cfg.epoch.trig_target)])
 % ------------------------------------------------------------------------
+
+% If the qualitycheck folder  doesn't exist, we create it 
+if ~exist(cfg.dir.qualitycheck, 'dir')
+    mkdir(cfg.dir.qualitycheck)
+end
+
 subjects = get_list_of_subjects(cfg.dir, do_overwrite, suffix_in, suffix_out);
 
 %% Run across subjects.
 %nthreads = min([cfg.system.max_threads, length(subjects)]);
 % parfor(isub = 1:length(subjects), nthreads) % set nthreads to 0 for normal for loop.
-for isub = 3%:length(subjects)
+
+for isub = 1%:length(subjects)
 
     % --------------------------------------------------------------
     % Import Biosemi raw data.
     % --------------------------------------------------------------
     EEG = func_import_readbdf(cfg.dir, subjects(isub).name);
 
-    % Use this line to verify the accuracy of channel labels and locations.
-    % figure; 
-    % topoplot([],EEG.chanlocs,'style','blank','electrodes','labelpoint','chaninfo',EEG.chaninfo);
-
     % --------------------------------------------------------------
     % Select data channels.
     % --------------------------------------------------------------
+     EEG = func_import_selectchans(EEG, cfg.chans);
 
-    EEG = func_import_selectchans(EEG, cfg.chans);
+    % % Use this line to verify the accuracy of channel labels and locations.
+    % figure; 
+    % topoplot([],EEG.chanlocs,'style','blank','electrodes','labelpoint','chaninfo',EEG.chaninfo);
 
     % --------------------------------------------------------------
     % Biosemi is recorded reference-free. We apply rereferencing in
@@ -58,14 +64,14 @@ for isub = 3%:length(subjects)
     % channel and NOT average reference. A channel near CMS/DRL usually
     % works fine.
     % --------------------------------------------------------------
-    EEG = func_import_reref(EEG, joinstructs(cfg.prep, cfg.chans));
+
+    EEG = pop_reref(EEG, cfg.prep.reref_chan, 'keepref', 'on');
 
     % --------------------------------------------------------------
     % Compute VEOG and HEOG.
     % --------------------------------------------------------------
     EEG = func_import_eyechans(EEG, cfg.chans);
-
-
+    
     %---------------------------------------------------------------
     % Remove all events from non-configured trigger devices
     %---------------------------------------------------------------
@@ -87,7 +93,7 @@ for isub = 3%:length(subjects)
     end 
 
     EEG = eeg_checkset(EEG, 'chanlocsize', 'chanlocs_homogeneous');
-
+   
     % --------------------------------------------------------------
     % Save the new EEG file in EEGLAB format.
     % --------------------------------------------------------------
@@ -115,16 +121,11 @@ end
 %% Create a report %%
 % --------------------------------------------------------------
 
-% If the qualitycheck folder  doesn't exist, we create it 
-
-if ~exist(cfg.dir.qualitycheck, 'dir')
-    mkdir(cfg.dir.qualitycheck)
-end
 
 fileID = fopen([cfg.dir.qualitycheck, 'project_report.txt'],'a+'); 
 fprintf(fileID,'\n %s',datestr(datetime),'report from script01_import ', ['Data directory: ',cfg.dir.main],...
     ['Processed subjects: ', strjoin({subjects.name}, ', ')], ['New reference (yes/no): ', num2str(cfg.prep.do_rereference)],...
-    ['Reference channel: ', EEG.chanlocs(cfg.prep.reref_chan).labels]);
+    ['Reference channel: ', EEG.chanlocs(cfg.prep.reref_chan).labels,' ' num2str(EEG.chanlocs(cfg.prep.reref_chan).urchan)]);
 fclose(fileID);
 
 % ------------------------------------------------------------------------
@@ -132,6 +133,15 @@ fclose(fileID);
 % ------------------------------------------------------------------------
 if check_quality_plot
     get_quality_check(subjects, rec_length, events, cfg) % if the folder data -> quality doesn't exist, the code creates it
+    
+    f = figure('Visible','off'); % create invisible figure
+
+    topoplot([], EEG.chanlocs, 'style','blank', ...
+             'electrodes','labelpoint','chaninfo',EEG.chaninfo);
+
+    saveas(f, strcat(cfg.dir.qualitycheck, subjects(isub).namestr, '_all_channels_topoplot.png'));  % or .jpg, .svg, etc.
+    close(f); % close the invisible figure
 end
 
-disp(strcat('Script01: Data import is done. The data is referenced to channel:', num2str(cfg.prep.reref_chan)))
+
+disp('Script01: Data import is done.')
