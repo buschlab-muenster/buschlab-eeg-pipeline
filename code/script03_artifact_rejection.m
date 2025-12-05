@@ -3,7 +3,9 @@
 % 1. Handle flat channels 
 % 2. Handle bad segments 
 % 3. Average reference
-% 4. (Optional) High-pass filter
+% 4.(Optional) High-pass filter
+% 5.(Optional) Baseline removal 
+
 
 % Set preferences, configuration and load list of subjects.
 clear; clc; close all
@@ -59,40 +61,59 @@ for isub = 1%1:length(subjects1)
     
     % Keep the reference channel by removing it from flat_channels
     flat_channels_to_remove = setdiff(flat_channels, ref_chan_idx);
-    
-    % Remove only the flat channels that are NOT the reference
-    EEG_chan_rmv = pop_select(EEG, 'nochannel', flat_channels_to_remove);
-   
-    % visualise - Ekin change default plotting settings of vis_artifacts to
-    % 30s window length and scale to  2 SD
-    % distance of the channel time series from each other in std. deviations
-    % still need to change x-axis tick labels
 
-    vis_artifacts(EEG_chan_rmv, EEG);
+    % ----------------------------------------------------------
+    % Manual Channel Review
+    %
+    % Under construction - you can only remove additional channels
+    % ---------------------------------------------------------
+
+    if cfg.rej.manual_channel_review == 1
+        % Interactive review: visualize and allow manual channel removal
+        EEG_chan_rmv = func_manual_channel_rejection(EEG, flat_channels_to_remove);
+    else
+        % Automatic only: remove flagged flat channels
+        EEG_chan_rmv = pop_select(EEG, 'nochannel', flat_channels_to_remove);
+    end
+
 
     % ----------------------------------------------------------
     % Detect Bad Segments
+    %
+    % TO-DO: Setting the parameteres in cgf file ??
+    %
     % ---------------------------------------------------------
 
     % The sliding window part
-    % apply highpass of 20 for sliding window
+    % apply highpass of 25 for sliding window
     EEG_temp = pop_eegfiltnew(EEG_chan_rmv, 'locutoff',25);
-    
-    % apply sliding window
-    [~, cleaned_mask] = clean_windows(EEG_temp,0.25,[-10 10]);
 
-    % get removed time intervals from cleaned mask
+    % apply ckl window 
+    [~, cleaned_mask] = clean_windows(EEG_temp,0.25,[-12 12]);
+
+    % ----------------------------------------------------------
+    % Manual Review of Segment Rejection - under construction 
+    % ---------------------------------------------------------
+
+    % if cfg.rej.manual_segment_review == 1
+    %     % Interactive manual review and modification of bad segments
+    %     [cleaned_mask, rejected_segments] = func_manual_segment_rejection(EEG_chan_rmv, cleaned_mask);
+    % end
+
+    % ----------------------------------------------------------
+    % Apply Final Segment Rejection Mask
+    % ---------------------------------------------------------
+
+    % get retained time intervals from cleaned mask
     retain_data_intervals = reshape(find(diff([false cleaned_mask false])),2,[])';
     retain_data_intervals(:,2) = retain_data_intervals(:,2)-1;
-    
-    % apply removed intervals to EEG data
-    EEG_clean = pop_select(EEG,'point',retain_data_intervals);
+
+    % apply retained intervals to EEG data
+    EEG_clean = pop_select(EEG_chan_rmv,'point',retain_data_intervals);
     EEG_clean.etc.clean_sample_mask = cleaned_mask;
     
-    % visualize
-    vis_artifacts(EEG_clean, EEG);
-
-    % ask
+    % % visualize before vs after
+    % vis_artifacts(EEG_clean, EEG_chan_rmv);
 
     % ----------------------------------------------------------
     % Re-reference to average

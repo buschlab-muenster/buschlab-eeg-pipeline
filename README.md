@@ -10,13 +10,6 @@ Refer to the documentation in the "Documentation" subfolder. Currently best view
 
 [Here](https://trello.com/b/91PwZtSc/buschlabpipeline) is the link to the development Trello board.
 
-
-
-
-
-
-
-
 ## The `cfg` struct and `getcfg`function
 
 - Every parameter that involves a decision is set in the `cfg`struct, which is define din the `getcfg`function. No parameter values are **ever** harcoded inside scripts or functions.

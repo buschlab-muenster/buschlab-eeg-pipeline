@@ -72,7 +72,8 @@ for isub = 1%:length(subjects)
     % High Pass Filter or Baseline Removal
     % --------------------------------------------------------------
 
-    if cfg.ica.do_ICA_hp_filter == true
+    if cfg.ica.do_ICA_hp_filter == 1
+        
         nonhpEEG = EEG;
 
         switch(cfg.ica.hp_ICA_filter_type)
@@ -84,7 +85,8 @@ for isub = 1%:length(subjects)
 
     end 
 
-    % Do we need to transfer weights for this version as well?
+    % Do we apply baseline removal to the eye channels? 
+    % We need to transfer weights for this version as well?
 
     %if cfg.ica.do_baseline_removal
     %   EEG_modified = pop_rmbase(EEG, [], [], cfg.chans.brain);
@@ -100,8 +102,7 @@ for isub = 1%:length(subjects)
         %    'extended', 1, 'chanind', cfg.chans.EEGchans);
         [EEG, com] = pop_runica(EEG, 'icatype', 'fastica', 'chanind', cfg.chans.EEGchans);
     else
-        [EEG, com] = pop_runica(EEG, 'icatype', 'runica', ...
-            'extended', 1, ...
+        [EEG, com] = pop_runica(EEG, 'icatype', 'runica','extended', 1, ...
             'chanind', cfg.chans.EEGchans, 'pca', cfg.ica.ica_ncomps);
     end
 
@@ -117,6 +118,10 @@ for isub = 1%:length(subjects)
         EEG = eeg_checkset(EEG); %let EEGLAB re-compute EEG.icaact & EEG.icawinv
         disp('Weights + sphere were copied to the original, unfiltered data.')
     end
+
+    % --------------------------------------------------------------
+    % Inspect ICA components 
+    % --------------------------------------------------------------
 
     if cfg.ica.check_components == 1
         figs_before = get(0, 'Children');

@@ -73,7 +73,7 @@ if ~exist(cfg.dir.qualitycheck, 'dir')
     mkdir(cfg.dir.qualitycheck)
 end
 
-msg = sprintf(['\n%s\n report from script02_simple_prep\n' ...
+text = sprintf(['\n%s\n report from script02_simple_prep\n' ...
     'Data directory: %s\n' ...
     'Processed subjects: %s\n' ...
     'These channels are not filtered: %s\n' ...
@@ -99,7 +99,7 @@ msg = sprintf(['\n%s\n report from script02_simple_prep\n' ...
     num2str(cfg.prep.do_resampling));
 
 fileID = fopen([cfg.dir.qualitycheck, 'project_report.txt'],'a+');
-fprintf(fileID,'%s',msg);
+fprintf(fileID,'%s',text);
 fclose(fileID);
 
 if cfg.prep.do_resampling == 1
@@ -110,22 +110,22 @@ if cfg.prep.do_resampling == 1
     fclose(fileID);
 end
 
-clear msg msg2
+clear text msg2
 
 % add plots
 
-% if you want to check results of filtering
+% checking results of filtering
 % this plot does not include the reference channel so there is one less
 % channel. 
 
 f = figure('Visible','off');  % create figure
 
-nn(EEG.data, 0, EEG.srate, 'freqrange', [1 cfg.prep.lp_filter_limit+10], 'plot', 'on');
-%                     
+spectopo(EEG.data, 0, EEG.srate, 'freqrange', [1 cfg.prep.lp_filter_limit+10], 'plot', 'off');
+                  
 saveas(f, fullfile(cfg.dir.qualitycheck, ...
     [subjects(isub).namestr '_spectopo_plot_after_filter.png']));
 
-%close(f);
+close(f);
 
 
 disp('Script02: Simple prep is done.')

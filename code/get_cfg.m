@@ -50,7 +50,6 @@ cfg.chans.HEOGchan = 69;
 cfg.chans.VEOGin = {[42], [65]};
 cfg.chans.HEOGin = {[66], [67]};
 
-
 % We use these files to import the channel coordinates. The "custom" file
 % is for the electrodes on the cap with Axx/Bxx labels. We use the
 % "standard" file for any remaining channels with 10/20 labels, e.g. the
@@ -140,11 +139,17 @@ cfg.epoch.deletebadlatency = 0;
 
 %% Trial rejection before ICA.
 % cfg.use_asr = 0;
-
+%
 cfg.rej.rejthresh_pre_ica  = 500;
 cfg.rej.rej_jp_singchan = 9;
 cfg.rej.rej_jp_allchans = 5;
 
+% Manual segment rejection review in script03
+cfg.rej.manual_segment_review = 1;  % 1=enable interactive manual review, 0=automatic only
+
+% Manual channel rejection review in script03
+cfg.rej.manual_channel_review = 1;  % 1=enable interactive channel review, 0=automatic only
+%
 
 %% ICA parameters
 % % ------------------------------------------
@@ -163,13 +168,8 @@ cfg.ica.hp_ICA_filter_type = 'butterworth';% CFG.hp_ICA_filter_type = 'eegfiltne
 cfg.ica.hp_ICA_filter_limit = 2;% CFG.hp_ICA_filter_limit = 2.5;
 % cfg.ica.hp_ICA_filter_tbandwidth = 0.2;% CFG.hp_ICA_filter_tbandwidth = 0.2;% only used for kaiser
 % cfg.ica.hp_ICA_filter_pbripple = 0.01;% CFG.hp_ICA_filter_pbripple = 0.01;% only used for kaiser
-cfg.ica.do_baseline_removal = false;
-cfg.ica.check_components = true;
-
-
-
-
-
+cfg.ica.do_baseline_removal = 0;
+cfg.ica.check_components = 1;
 %
 % % Olaf Dimigen recommends to overweight spike potentials using his OPTICAT
 % % approach. Do you want to do this prior to computung ICA?
@@ -207,7 +207,7 @@ cfg.icareject.iclabel_rm_ICtypes = {'Eye','Muscle', 'Heart','Channel Noise','Oth
 % Minimum classification accuracy to believe an ICs assigned label is true.
 % Can be a vector with one accuracy per category or a single value for all
 % categories.
-cfg.icareject.iclabel_min_acc = 0.5;% 0.75;%was: 0.75; %50% is not chance, but seems realistic based on inspectio
+cfg.icareject.iclabel_min_acc = 0.5;% 0.75;%was: 0.75; %50% is not chance, but seems realistic based on inspection
 
 
 %% ------------------------------------------
