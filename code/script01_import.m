@@ -1,144 +1,143 @@
+% script01_import
+
+% This script imports the EEG data from the Biosemi .bdf files and stores
+% them in EEGLAB format. We also remove empty EEG channels, import the
+% channel coordinates, re-reference data, import the Eyelink .edf files and
+% integrate the eyetracking data with the EEG data. Beyond that, this
+% script does not apply any signal processing or manipulation of the data
+% yet.
+
 %% Set preferences, configuration and load list of subjects.
 clear; clc; close all
-
 restoredefaultpath
-prefs = get_prefs('eeglab_all', 1);
-cfg   = get_cfg;
+cfg = get_cfg;
+eeglab nogui
 
 % ------------------------------------------------------------------------
 % **Important**: these variables determine which data files are used as
 % input and output.
 suffix_in  = '';
 suffix_out = 'import';
-do_overwrite = false;
-% ------------------------------------------------------------------------
+do_overwrite = true;
 
 % ------------------------------------------------------------------------
-% This is for the data quality check
-% Prepare types of events
-check_quality_plot = 1 % or 0
-figDir = '/data4/BuschlabPipeline/AlphaIcon/Figures/'  %could be part fo the cfg file
-eventType = cfg.epoch.image_onset_triggers; %
-N = numel(eventType); %number of trigger types
-events(:,1) = eventType; %prepare for loading the number of occuraces for each trigger
+% ------------------------------------------------------------------------
+% Set variables for data quality check and prepare matrices
+check_quality_plot = 1;
 
-disp(['Will check data for triggers: ', num2str(eventType)])
+rec_length = [];
+nevent = numel(cfg.epoch.trig_target); %number of trigger types
+events(:,1) = cfg.epoch.trig_target; %here we will store the number of occuraces for each trigger
+disp(['Will check data for triggers: ', num2str(cfg.epoch.trig_target)])
 % ------------------------------------------------------------------------
 
-textDir = '/data4/BuschlabPipeline/AlphaIcon/report/'%could go tot he cfg fil
+% If the qualitycheck folder doesn't exist in the 'data' folder, we create it 
+if ~exist(cfg.dir.qualitycheck, 'dir')
+    mkdir(cfg.dir.qualitycheck)
+end
 
 subjects = get_list_of_subjects(cfg.dir, do_overwrite, suffix_in, suffix_out);
 
 %% Run across subjects.
-nthreads = min([prefs.max_threads, length(subjects)]);
-parfor(isub = 1:length(subjects), nthreads) % set nthreads to 0 for normal for loop.
-    % for isub = 1:length(subjects)
+%nthreads = min([cfg.system.max_threads, length(subjects)]);
+% parfor(isub = 1:length(subjects), nthreads) % set nthreads to 0 for normal for loop.
 
-    if ~exist(subjects(isub).outdir, 'dir')
-        mkdir(subjects(isub).outdir)
-    end
+for isub = 2%:length(subjects)
 
     % --------------------------------------------------------------
     % Import Biosemi raw data.
     % --------------------------------------------------------------
     EEG = func_import_readbdf(cfg.dir, subjects(isub).name);
 
-    % !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    % This is a patch for ROSA3: for some subjects, the time lag between
-    % recording start and first trial onset is too short for the long
-    % baseline we require for epoching, so the first trials is dropped.
-    % This creates a huge headache because then the numbers of trials in
-    % EEG and logfile do not match. To fix this, I append a little bit of
-    % data at the beginning of each file.
-    % !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    %     nsecs = 5;
-    %     EEG = func_import_patchdata(EEG, nsecs);
-
     % --------------------------------------------------------------
     % Select data channels.
     % --------------------------------------------------------------
-    EEG = func_import_selectchans(EEG, cfg.chans);
+     EEG = func_import_selectchans(EEG, cfg.chans);
+
+    % % Use this line to verify the accuracy of channel labels and locations.
+    % figure; 
+    % topoplot([],EEG.chanlocs,'style','blank','electrodes','labelpoint','chaninfo',EEG.chaninfo);
 
     % --------------------------------------------------------------
     % Biosemi is recorded reference-free. We apply rereferencing in
-    % software.
+    % software. For preprocessing, I recommend using a single reference
+    % channel and NOT average reference. A channel near CMS/DRL usually
+    % works fine.
     % --------------------------------------------------------------
-    EEG = func_import_reref(EEG, cfg.prep);
+
+    EEG = pop_reref(EEG, cfg.prep.reref_chan, 'keepref', 'on');
+    disp(['The data is now referenced to: ', EEG.chanlocs(cfg.prep.reref_chan).labels])
+    figure; 
+    topoplot(cfg.prep.reref_chan,EEG.chanlocs,'style','blank','electrodes','numbers','chaninfo',EEG.chaninfo);
 
     % --------------------------------------------------------------
     % Compute VEOG and HEOG.
     % --------------------------------------------------------------
     EEG = func_import_eyechans(EEG, cfg.chans);
-
-    % --------------------------------------------------------------
-    % Filter the data.
-    % --------------------------------------------------------------
-    % We want to keep the VEOG/HEOG data unfiltered to make sure they
-    % are not distorted by the filter. We keep a copy here and then put
-    % it back after filtering.
-    tmp = EEG.data;
-    EEG = func_import_filter(EEG, cfg.prep);
-    EEG.data(cfg.chans.VEOGchan,:) = tmp(cfg.chans.VEOGchan,:);
-    EEG.data(cfg.chans.HEOGchan,:) = tmp(cfg.chans.HEOGchan,:);
-
+    
     %---------------------------------------------------------------
     % Remove all events from non-configured trigger devices
     %---------------------------------------------------------------
     EEG = func_import_remove_triggers(EEG, cfg.epoch);
 
-    % --------------------------------------------------------------
-    % Import Eyetracking data.
-    % --------------------------------------------------------------
-    EEG = func_import_importEye(EEG, subjects(isub).namestr, cfg.dir, cfg.eyetrack);    %Elena document that .asc file has to be named in the same way as subjects(isub).namestr
+    %---------------------------------------------------------------
+    % Import Eyetracking data if exists
+    %---------------------------------------------------------------
 
-    % --------------------------------------------------------------
-    % Import behavioral data.
-    % --------------------------------------------------------------
-    %? EEG = func_importBehavior(EEG, subjects(isub).namestr, cfg.dir, cfg.epoch);%Elena document that logfile has to be named in the same way as subjects(isub).namestr
+    if cfg.eyetrack.exist == 1
 
+        disp('Eye-tracking data processing enabled. Eyetracking data will be loaded.')
+
+        EEG = func_import_importEye(EEG, subjects(isub).namestr, cfg.dir, cfg.eyetrack); 
+
+    else
+         disp('Eye-tracking data processing disabled.')
+    
+    end 
+
+    EEG = eeg_checkset(EEG, 'chanlocsize', 'chanlocs_homogeneous');
+   
     % --------------------------------------------------------------
     % Save the new EEG file in EEGLAB format.
     % --------------------------------------------------------------
+
+    if ~exist(subjects(isub).outdir, 'dir')
+        mkdir(subjects(isub).outdir)
+    end
+
     EEG = func_saveset(EEG, subjects(isub));
 
     % --------------------------------------------------------------
-    % Inspect data quality.
+    % Create variables that will be used to inspect data quality.
     % --------------------------------------------------------------
 
-    % Length of recoding in minutes
-    rec_length(isub)=size(EEG.data,2)/EEG.srate/60
+    % Length of recording in minutes for each subject
+    rec_length(isub)=size(EEG.data,2)/EEG.srate/60;
 
     %count occurances of the events
-    for k = 1:N
-        events(k,isub+1) = sum([EEG.event.type]==eventType(k));
+    for k = 1:nevent
+        events(k,isub+1) = sum([EEG.event.type]==cfg.epoch.trig_target(k));
     end
-
 
 end
 
-% --------------------------------------------------------------
-% Create a report.
-% --------------------------------------------------------------
-
-fileID = fopen([textDir, 'project_report.txt'],'a+'); %do not overwrite
-fprintf(fileID,'\n %s%s \n %s%s \n %s%d \n %s%d%s%s ',datestr(datetime),'report from script01_import ', 'Data directory: ',cfg.dir.main,...
-    'New sampling rate: ', cfg.prep.new_sampling_rate,...
-    'New reference: ', cfg.prep.do_rereference,', ', cfg.prep.reref_chan);
-fclose(fileID);
+%% Create a report %%
 
 % ------------------------------------------------------------------------
 % Makes data quality plots based on the collected info on the sample
 % ------------------------------------------------------------------------
-
 if check_quality_plot
-    %plot and save figure for the recording length
-    bar(rec_length), xlabel('Participants', 'FontSize', 14), ylabel('Length of recordings (min)', 'FontSize', 14)
-    saveas(gcf, [figDir, 'recording length.png'])
+    script_nr=1;
+    get_quality_check(script_nr,{subjects.name}, rec_length, events, cfg) % if the folder data -> quality doesn't exist, the code creates it
+    
+    f = figure('Visible','off'); % create invisible figure
 
-    %plot and save figure for the number of event types. Subjects are color coded
-    bar(events(:,1),events(:,2:end)), xlabel('Events', 'FontSize', 12), ylabel('Number of occurances', 'FontSize', 12),...
-        legend(string([1:33]), 'Location','southoutside', 'Orientation','horizontal','NumColumns',6, 'FontSize',5)
-    saveas(gcf, [figDir,'events per participant.png'])
+    topoplot([], EEG.chanlocs, 'style','blank', ...
+             'electrodes','labelpoint','chaninfo',EEG.chaninfo);
+
+    saveas(f, strcat(cfg.dir.qualitycheck, subjects(isub).namestr, '_all_channels_topoplot.png'));  % or .jpg, .svg, etc.
+    close(f); % close the invisible figure
 end
 
-disp('Done.')
+
+disp('Script01: Data import is done.')

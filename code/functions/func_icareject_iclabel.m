@@ -25,9 +25,18 @@ if ~isempty(old_badics)
 %     EEG = func_icareject_combine_badics(EEG, old_badics);
 end
 
+% Ensure column vector output with correct size
 bad_ics_iclabel = EEG.reject.gcompreject;
+bad_ics_iclabel = logical(bad_ics_iclabel(:));  % Force column vector and ensure logical
+% Ensure output size matches number of ICs
+n_components = size(EEG.icaweights, 1);
+if length(bad_ics_iclabel) ~= n_components
+    badics_temp = zeros(n_components, 1);
+    badics_temp(1:length(bad_ics_iclabel)) = bad_ics_iclabel;
+    bad_ics_iclabel = logical(badics_temp);
+end
 
-fprintf('Found %i bad components belonging with p >= %2.2f \nto classes: %s.\n',...
+fprintf('Found %i bad components (ICLabel) with p >= %2.2f \nto classes: %s.\n',...
     sum(bad_ics_iclabel), ...
     cfg.iclabel_min_acc, ...
     strjoin(EEG.etc.ic_classification.ICLabel.classes(bad_classes), ', '));

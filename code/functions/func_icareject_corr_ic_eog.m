@@ -1,5 +1,5 @@
-function [badics, corr_ic_eeg] = find_bad_ics(EEG, eog_chans, corrthreshold)
-% function [badics] = find_bad_ics(EEG, eog_chans, corrthreshold)
+function [badics, corr_ic_eeg] = func_icareject_corr_ic_eog(EEG, eog_chans, corrthreshold)
+% function [badics] = func_icareject_corr_ic_eog(EEG, eog_chans, corrthreshold)
 % This function automatically determines "bad" independent components.
 % "Bad" ist defined as a component that correlates strongly with any of the
 % EOG channels.
@@ -32,10 +32,19 @@ for ieogchan = 1:n_eog
     end
 end
 
+% Ensure column vector output with correct size
 badics = any(abs(corr_ic_eeg) > corrthreshold, 2);
+badics = logical(badics(:));  % Force column vector and ensure logical
+% Ensure output size matches number of ICs
+n_components = size(EEG.icaweights, 1);
+if length(badics) ~= n_components
+    badics_temp = zeros(n_components, 1);
+    badics_temp(1:length(badics)) = badics;
+    badics = logical(badics_temp);
+end
 
 % Print result to command line.
-fprintf('Found %d bad ICs.\n', sum(badics))
+fprintf('Found %d bad ICs (EOG correlation).\n', sum(badics))
 
 bad_idx = find(badics);
 for ibad = 1:length(bad_idx)

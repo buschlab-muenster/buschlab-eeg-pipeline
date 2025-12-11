@@ -1,4 +1,4 @@
-function [EEG] = func_import_filter(EEG, cfg)
+function [EEG] = func_import_filter(EEG, cfg, dirs)
 %
 % wm: THIS FUNCTION STILL NEEDS A PROPER DOCUMENTATION!
 
@@ -18,15 +18,22 @@ function [EEG] = func_import_filter(EEG, cfg)
 %  along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 
-
 % We have to make sure that we add the path to the filter plugin, otherwise
 % we may get problems loading 'dipfitdefs'.
-eeglabdir = fileparts(which('eeglab'));
-addpath([eeglabdir, '/plugins/firfilt/'])
-erplabdir = dir([eeglabdir, '/plugins/ERPLAB*']);
-addpath(genpath([erplabdir.folder, filesep, erplabdir.name, filesep]));
+% eeglabdir = fileparts(which('eeglab'));
+% addpath([eeglabdir, '/plugins/firfilt/'])
+% erplabdir = dir([eeglabdir, '/plugins/ERPLAB*']);
+% addpath(genpath([erplabdir.folder, filesep, erplabdir.name, filesep]));
 
-elektro_status('Filtering continuous data');
+%d = dir('../../tools/eeglab2023.0/plugins/**/pop_basicfilter.m');
+
+% d = dir('/./tools/eeglab*/plugins/erplab/eegplugin_erplab.m')
+% addpath(genpath(d.folder))
+addpath(strrep([dirs.eeglab,'\plugins\erplab\pop_functions\'],'\', '/')) % match the direction of all slashes (works for Ubuntu and Windows, need to test on a Mac)
+addpath(strrep([dirs.eeglab,'\plugins\erplab\functions\'],'\', '/'))
+
+
+disp('Filtering continuous data');
 
 if cfg.do_lp_filter
     [m, ~] = pop_firwsord('blackman', EEG.srate, cfg.lp_filter_tbandwidth);
@@ -44,7 +51,6 @@ if cfg.do_hp_filter
             EEG  = pop_basicfilter( EEG, 1:EEG.nbchan, ...
                 'Cutoff',  cfg.hp_filter_limit, ...
                 'Design', 'butter', 'Filter', 'highpass', 'Order',  2 );           
-            EEG = eegh(com, EEG);
             
         case('kaiser')
             m = pop_firwsord('kaiser', EEG.srate, cfg.hp_filter_tbandwidth, cfg.hp_filter_pbripple);
@@ -53,18 +59,20 @@ if cfg.do_hp_filter
             [EEG, com] = pop_firws(EEG, 'fcutoff', cfg.hp_filter_limit, ...
                 'ftype', 'highpass', 'wtype', 'kaiser', ...
                 'warg', beta, 'forder', m);
-            EEG = eegh(com, EEG);
+
         case('eegfiltnew')
             [EEG, com] = pop_eegfiltnew(EEG, cfg.hp_filter_limit, 0);
             %   >> [EEG, com, b] = pop_eegfiltnew(EEG, locutoff, hicutoff, filtorder,
 %                                     revfilt, usefft, plotfreqz, minphase);
-            EEG = eegh(com, EEG);
+
     end
 end
 
 if cfg.do_notch_filter
     [EEG, com] = pop_eegfiltnew(EEG, cfg.notch_filter_lower,...
         cfg.notch_filter_upper, [], 1);
-    EEG = eegh(com, EEG);
+
 end
-end
+
+%rmpath(genpath(d.folder))
+done("filtering")

@@ -1,7 +1,11 @@
-function EEG = func_filtbert(EEG, cfg)
+function EEG = func_filtbert(EEG, cfg, iband)
 
 EEG.data = double(EEG.data);
 EEG.filtbert_fband = cfg.fbands{iband};
+
+fprintf('Running filter-Hilbert on frequency band %2.2f to %2.2f.\n', ...
+    EEG.filtbert_fband(1), EEG.filtbert_fband(2))
+
 
 % EEG = pop_eegfiltnew(EEG, ...
 %     'locutoff', EEG.filtbert_fband(1), ...
@@ -20,6 +24,7 @@ EEG = pop_firws(EEG, 'fcutoff', EEG.filtbert_fband, 'ftype', 'bandpass', ...
     'wtype', cfg.wintype, 'forder', m, 'minphase', 0, 'usefftfilt', 0, ...
     'plotfresp', 0, 'causal', 0);
 
+
 % 
 % tic
 % for ichan = 1:size(EEG.data,1)
@@ -34,14 +39,13 @@ EEG = pop_firws(EEG, 'fcutoff', EEG.filtbert_fband, 'ftype', 'bandpass', ...
 % trials.
 % tic
 EEG.data = permute(EEG.data, [2 1 3]);
-EEG.data = abs(hilbert(EEG.data)).^2;
+EEG.data = abs(hilbert(EEG.data));
+% EEG.data = abs(hilbert(EEG.data)).^2;
 EEG.data = ipermute(EEG.data, [2 1 3]);
-% toc
+
 
 % Paste our temporary copy of unfiltered EOG/eye tracking channels.
 EEG.data(non_eeg_chans,:,:) = tmp_data.data(non_eeg_chans,:,:);
+% toc
 
 EEG.data = single(EEG.data);
-
-fprintf('Running filter-Hilbert on frequency band %2.2f to %2.2f.\n', ...
-    EEG.filtbert_fband(1), EEG.filtbert_fband(2))
