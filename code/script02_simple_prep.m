@@ -22,12 +22,13 @@ subjects = get_list_of_subjects(cfg.dir, do_overwrite, suffix_in, suffix_out);
 
 % Set variables for data quality check and prepare matrices
 check_quality_plot = 1;
+make_method_section = 1;
 
 %% Run across subjects.
 %nthreads = min([cfg.system.max_threads, length(subjects)]);
 % parfor(isub = 1:length(subjects), nthreads) % set nthreads to 0 for normal for loop.
 
-for isub = 2%1:length(subjects)
+for isub = 1%1:length(subjects)
 
     % ----------------------------------------------------------
     % Load the dataset.
@@ -94,6 +95,14 @@ if check_quality_plot
     saveas(f, fullfile(cfg.dir.qualitycheck, ...
         [subjects(isub).namestr '_spectopo_plot_after_filter.png']));
     close(f);
+end
+
+% ------------------------------------------------------------------------
+% Writes method-section lines to file according to settings
+% ------------------------------------------------------------------------
+
+if make_method_section
+    write_method_lines(cfg, 'lp_filtering',cfg.prep.do_lp_filter,'hp_filtering',cfg.prep.do_hp_filter)
 end
 
 

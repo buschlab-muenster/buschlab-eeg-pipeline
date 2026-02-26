@@ -22,9 +22,12 @@ do_overwrite = true;
 
 % ------------------------------------------------------------------------
 % ------------------------------------------------------------------------
-% Set variables for data quality check and prepare matrices
-check_quality_plot = 1;
+% Set variables for data quality check and writing method lines
 
+check_quality_plot = 1;
+make_method_section = 1;
+
+% Prepare matrices
 rec_length = [];
 nevent = numel(cfg.epoch.trig_target); %number of trigger types
 events(:,1) = cfg.epoch.trig_target; %here we will store the number of occuraces for each trigger
@@ -42,7 +45,7 @@ subjects = get_list_of_subjects(cfg.dir, do_overwrite, suffix_in, suffix_out);
 %nthreads = min([cfg.system.max_threads, length(subjects)]);
 % parfor(isub = 1:length(subjects), nthreads) % set nthreads to 0 for normal for loop.
 
-for isub = 2%:length(subjects)
+for isub = 1%:length(subjects)
 
     % --------------------------------------------------------------
     % Import Biosemi raw data.
@@ -139,5 +142,12 @@ if check_quality_plot
     close(f); % close the invisible figure
 end
 
+% ------------------------------------------------------------------------
+% Writes method-section lines to file according to settings
+% ------------------------------------------------------------------------
+
+if make_method_section
+    write_method_lines(cfg, 'rereferencing',cfg.prep.do_rereference)
+end
 
 disp('Script01: Data import is done.')

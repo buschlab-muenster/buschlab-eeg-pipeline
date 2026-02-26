@@ -17,7 +17,9 @@ if  strcmp(username, 'ekindogailkel')
 elseif strcmp(username, 'ecesnait')
     rootdir = 'Z:\aebusch\BuschlabPipeline\';
     cfg.dir.main = fullfile(rootdir, 'eilkel_pipe\');
-
+elseif strcmp(username, 'schnaetter')
+    rootdir = 'D:\Documents\AEBusch\';
+    cfg.dir.main = fullfile(rootdir,'EEGPipeline');
 end
 
 % Subfolder with raw data.
@@ -34,7 +36,7 @@ cfg.dir.grand    = fullfile(cfg.dir.main, 'data', 'grand/');
 cfg.dir.qualitycheck = fullfile(cfg.dir.main, 'data', 'quality/');
 
 % Where is the EEGLAB toolbox located?
-cfg.dir.eeglab   = fullfile(cfg.dir.main, 'new_pipe_EC/tools/eeglab2023.1/'); % EEGLAB in buschlab pipeline for git share
+cfg.dir.eeglab   = fullfile(cfg.dir.main, 'tools','eeglab2023.1/'); % EEGLAB in buschlab pipeline for git share
 
 addpath('./functions')
 addpath('./files')
